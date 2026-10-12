@@ -8,7 +8,7 @@
 
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
-    <view class="seg seg-4 anim">
+    <view class="seg seg-5 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -160,6 +160,42 @@
       <view wx:else class="empty">
         <view class="et1">暂无成长数据</view>
         <view class="et2">在「宝宝资料」填写出生体重，并记录测量值</view>
+      </view>
+    </view>
+
+    <!-- ============ 体温 ============ -->
+    <view class="chartcard anim" wx:if="{{seg === 'temp'}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">早晚体温</view>
+          <view class="sub">每天早、晚各取最新一次，点选查看当天</view>
+        </view>
+        <view class="chip" wx:if="{{temp.has}}">{{temp.chip}}</view>
+      </view>
+      <block wx:if="{{temp.has}}">
+        <view class="chart-box" wx:if="{{temp.points.length >= 2}}">
+          <canvas type="2d" id="chCv" class="chart"></canvas>
+          <view class="chart-hits">
+            <view class="chart-hit" wx:for="{{chartRows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-hit" hover-stay-time="80" aria-role="button" aria-label="查看{{item.label}}" bindtap="onDayTap"></view>
+          </view>
+        </view>
+        <view class="kpis">
+          <view class="kpi" wx:for="{{temp.kpis}}" wx:key="k">
+            <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
+            <view class="kl">{{item.k}}</view>
+          </view>
+        </view>
+        <view class="dlist">
+          <view class="drow {{dayKey === item.key ? 'on' : ''}}" wx:for="{{temp.rows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayTap">
+            <text class="dd">{{item.d}}</text>
+            <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--temp)"></view></view>
+            <view class="dv wide">{{item.v}}</view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty">
+        <view class="et1">暂无体温数据</view>
+        <view class="et2">早晚各记一次后，这里会出现近 7 天趋势</view>
       </view>
     </view>
 

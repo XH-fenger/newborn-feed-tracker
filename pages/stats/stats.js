@@ -1,4 +1,4 @@
-// 统计 —— 喂养 / 尿布 / 睡眠 / 成长 四段（canvas 自绘 + 明细列表）
+// 统计 —— 喂养 / 尿布 / 睡眠 / 成长 / 体温（canvas 自绘 + 明细列表）
 var storage = require('../../utils/storage.js');
 var statsMod = require('../../utils/stats.js');
 var theme = require('../../utils/theme.js');
@@ -11,7 +11,8 @@ var SEGS = [
   { k: 'feed', t: '喂养' },
   { k: 'diaper', t: '尿布' },
   { k: 'sleep', t: '睡眠' },
-  { k: 'growth', t: '成长' }
+  { k: 'growth', t: '成长' },
+  { k: 'temp', t: '体温' }
 ];
 
 Page({
@@ -27,6 +28,7 @@ Page({
     diaper: { avg: 0, kpis: [], rows: [], has: false },
     sleep: { avg: 0, kpis: [], rows: [], has: false },
     growth: { chip: '', kpis: [], rows: [], has: false, points: [] },
+    temp: { chip: '', kpis: [], rows: [], has: false, points: [] },
     chartRows: [],
     dayOn: false,
     dayKey: '',
@@ -63,7 +65,8 @@ Page({
         diaper19: icons.svg('diaper', c.diaper, 19, 2),
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
-        med19: icons.svg('med', c.pri, 19, 2)
+        med19: icons.svg('med', c.pri, 19, 2),
+        temp19: icons.svg('temp', c.temp, 19, 2)
       }
     };
   },
@@ -161,9 +164,53 @@ Page({
       points: points
     };
 
-    var chartRows = { feed: feed.rows, diaper: diaper.rows, sleep: sleep.rows, growth: growth.rows }[this.data.seg] || [];
+    /* —— 体温（近 7 天早 / 晚） —— */
+    var td = statsMod.tempDays(records, 7);
+    var vals = [];
+    td.forEach(function (d) {
+      if (d.am) { vals.push(d.am.celsius); }
+      if (d.pm) { vals.push(d.pm.celsius); }
+    });
+    var hasTemp = vals.length > 0;
+    var maxT = hasTemp ? Math.max.apply(null, vals) : 0;
+    var minT = hasTemp ? Math.min.apply(null, vals) : 0;
+    var points = td.map(function (d) {
+      var parts = [];
+      if (d.am) { parts.push(d.am.celsius); }
+      if (d.pm) { parts.push(d.pm.celsius); }
+      var avgV = 0;
+      parts.forEach(function (v) { avgV += v; });
+      avgV = Math.round(avgV / parts.length * 10) / 10;
+      return { label: T.fmtMD(d.ts), v: avgV, key: d.key };
+    });
+    var temp = {
+      has: hasTemp,
+      chip: hasTemp ? vals.length + ' 次' : '',
+      kpis: [
+        { v: hasTemp ? rowsOf.fmtC(maxT) : '0', u: '°C', k: '最高' },
+        { v: hasTemp ? rowsOf.fmtC(statsMod.avg(vals)) : '0', u: '°C', k: '平均' },
+        { v: hasTemp ? rowsOf.fmtC(minT) : '0', u: '°C', k: '最低' }
+      ],
+      rows: td.map(function (d) {
+        var am = d.am ? rowsOf.fmtC(d.am.celsius) : '—';
+        var pm = d.pm ? rowsOf.fmtC(d.pm.celsius) : '—';
+        var top = 0;
+        if (d.am) { top = d.am.celsius; }
+        if (d.pm && d.pm.celsius > top) { top = d.pm.celsius; }
+        return {
+          key: d.key,
+          d: T.fmtMD(d.ts),
+          p: top > 35 ? Math.max(8, Math.min(100, Math.round((top - 35) / 3 * 100))) : 8,
+          v: '早' + am + ' 晚' + pm,
+          u: ''
+        };
+      }).reverse(),
+      points: points
+    };
+
+    var chartRows = { feed: feed.rows, diaper: diaper.rows, sleep: sleep.rows, growth: growth.rows, temp: temp.points }[this.data.seg] || [];
     this.setData({
-      navMeta: navMeta, feed: feed, diaper: diaper, sleep: sleep, growth: growth, chartRows: chartRows
+      navMeta: navMeta, feed: feed, diaper: diaper, sleep: sleep, growth: growth, temp: temp, chartRows: chartRows
     });
     if (this.data.dayOn && this.data.dayKey) { this.openDay(this.data.dayKey); }
     this.drawChart();
@@ -173,7 +220,7 @@ Page({
     var k = e.currentTarget.dataset.k;
     var i = e.currentTarget.dataset.i;
     if (k === this.data.seg) { return; }
-    var rows = { feed: this.data.feed.rows, diaper: this.data.diaper.rows, sleep: this.data.sleep.rows, growth: this.data.growth.rows }[k] || [];
+    var rows = { feed: this.data.feed.rows, diaper: this.data.diaper.rows, sleep: this.data.sleep.rows, growth: this.data.growth.rows, temp: this.data.temp.points }[k] || [];
     this.setData({ seg: k, segIndex: i, chartRows: rows, dayOn: false, dayKey: '', dayRows: [] });
     var that = this;
     // wx:if 重建 canvas 节点后异步绘制
@@ -272,6 +319,10 @@ Page({
       } else if (seg === 'growth') {
         o.color = c.growth;
         o.points = that.data.growth.points;
+        charts.drawLine(ctx, cv, w, h, o);
+      } else if (seg === 'temp' && that.data.temp.points.length >= 2) {
+        o.color = c.temp;
+        o.points = that.data.temp.points;
         charts.drawLine(ctx, cv, w, h, o);
       }
     });

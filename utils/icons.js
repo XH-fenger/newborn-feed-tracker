@@ -27,7 +27,8 @@ var P = {
   chevD: '<path d="M6 9l6 6 6-6"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.6"/><path d="M8 3v4M16 3v4M3.5 10.4h17"/>',
   timer: '<circle cx="12" cy="13.2" r="7.8"/><path d="M12 9.4v3.8l2.6 1.6M9.4 2.6h5.2"/>',
-  med: '<rect x="8" y="3.2" width="8" height="17.6" rx="4"/><path d="M8 12h8"/>'
+  med: '<rect x="8" y="3.2" width="8" height="17.6" rx="4"/><path d="M8 12h8"/>',
+  temp: '<path d="M14 14.6V5.4a2 2 0 1 0-4 0v9.2a3.6 3.6 0 1 0 4 0z"/><path d="M12 11.2V7.2"/>'
 };
 
 // 生成 data URI。sw 为描边宽度，原型非默认值处调用时单独传

@@ -13,7 +13,7 @@
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
     <!-- 类型分段 -->
-    <view class="seg seg-5 anim">
+    <view class="seg seg-6 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -262,6 +262,55 @@
         <view class="fld">
           <view class="flabel">备注</view>
           <input class="tx" value="{{note}}" placeholder="可选，如 随奶服" placeholder-class="ph" bindinput="onNote" />
+        </view>
+      </view>
+    </block>
+
+    <!-- ============ 体温 ============ -->
+    <block wx:if="{{seg === 'temp'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">时段</view>
+          <view class="fhint">一天默认早、晚各测一次</view>
+          <view class="seg-inline">
+            <view class="si {{tempSlot === 'am' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="am" bindtap="onTempSlot">早测</view>
+            <view class="si {{tempSlot === 'pm' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="pm" bindtap="onTempSlot">晚测</view>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">腋温 (°C)</view>
+          <view class="stepper">
+            <view class="st {{celsius <= 34 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepTemp" aria-role="button" aria-label="降低体温">−</view>
+            <view class="num">
+              <input class="num-in" type="digit" value="{{celsius}}" bindinput="onTempInput" bindblur="onTempBlur" />
+              <text class="unit">°C</text>
+            </view>
+            <view class="st {{celsius >= 42 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepTemp" aria-role="button" aria-label="升高体温">+</view>
+          </view>
+          <view class="fhint" style="margin-top:8px">常见腋温大约 36.0–37.4 °C，达到 37.5 °C 会标为偏高</view>
+          <view class="ferr" wx:if="{{fieldErr === 'temp'}}">请填写 34.0–42.0 之间的体温</view>
+          <view class="fhint" wx:if="{{tempHint}}">{{tempHint}}</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">记录时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{dateStr}}" bindchange="onDateChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{dateStr}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{timeStr}}" bindchange="onTimeChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{timeStr}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选，如：刚喂完、环境偏热" placeholder-class="ph" bindinput="onNote" />
         </view>
       </view>
     </block>

@@ -10,9 +10,10 @@ var FILTERS = [
   { k: 'feed', t: '喂养' },
   { k: 'diaper', t: '尿布' },
   { k: 'sleep', t: '睡眠' },
-  { k: 'med', t: '补充' }
+  { k: 'med', t: '补充' },
+  { k: 'temp', t: '体温' }
 ];
-var FILTER_NAME = { all: '', feed: '喂养', diaper: '尿布', sleep: '睡眠', med: '补充' };
+var FILTER_NAME = { all: '', feed: '喂养', diaper: '尿布', sleep: '睡眠', med: '补充', temp: '体温' };
 
 Page({
   data: {
@@ -70,6 +71,7 @@ Page({
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
+        temp19: icons.svg('temp', c.temp, 19, 2),
         empty: icons.svg('list', c.ink3, 44, 1.6)
       }
     };

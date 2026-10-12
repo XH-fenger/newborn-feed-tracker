@@ -21,6 +21,10 @@ Page({
     heroMeta: '',
     dayChip: '第 1 天',
     today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0h 0m' },
+    todayTemp: {
+      am: { empty: true, text: '待测', sub: '建议 8:00', hi: false, lo: false, id: '' },
+      pm: { empty: true, text: '待测', sub: '建议 20:00', hi: false, lo: false, id: '' }
+    },
     hasFeed: false,
     next: { hh: '00', mm: '00', sub: '', nextHM: '--:--' },
     rows: [],
@@ -78,6 +82,7 @@ Page({
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
+        temp19: icons.svg('temp', c.temp, 19, 2),
         todo19: icons.svg('calendar', c.pri, 19, 2),
         empty: icons.svg('list', c.ink3, 44, 1.6)
       }
@@ -107,6 +112,7 @@ Page({
         diaper: t.diaper,
         sleepText: Math.floor(t.sleepMin / 60) + 'h ' + (t.sleepMin % 60) + 'm'
       },
+      todayTemp: stats.todayTempView(records),
       hasFeed: !!lf,
       rows: this.buildRows(records.slice(0, 3)),
       empty: records.length === 0,
@@ -318,5 +324,20 @@ Page({
   },
   onNextTap: function () {
     if (!this.data.hasFeed) { this.goAdd(); }
+  },
+  onTempTap: function (e) {
+    var slot = e.currentTarget.dataset.slot === 'pm' ? 'pm' : 'am';
+    var cell = slot === 'pm' ? this.data.todayTemp.pm : this.data.todayTemp.am;
+    var app = getApp();
+    if (cell && cell.id) {
+      app.globalData.editingId = cell.id;
+      app.globalData.pendingType = '';
+      app.globalData.pendingSlot = '';
+    } else {
+      app.globalData.editingId = '';
+      app.globalData.pendingType = 'temp';
+      app.globalData.pendingSlot = slot;
+    }
+    wx.switchTab({ url: '/pages/record/record' });
   }
 });

@@ -138,6 +138,24 @@ page {
 .tcv small { font-size: 12px; font-weight: 700; color: var(--ink3); margin-left: 3px; letter-spacing: 0; }
 .tcl { font-size: 12px; color: var(--ink2); margin-top: 5px; font-weight: 600; }
 
+/* 今日体温：早测 / 晚测 */
+.tempday { margin: 14px 16px 0; background: var(--card); border-radius: var(--r-xl);
+  padding: 14px 12px 12px; box-shadow: var(--sh1); }
+.tempday-h { display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px 10px; }
+.tempday-t { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; }
+.tempday-sub { font-size: 12px; color: var(--ink3); font-weight: 600; }
+.tempday-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tslot { background: var(--fill); border-radius: var(--r-md); padding: 12px 14px; transition: transform .18s; }
+.hv-cell.tslot { transform: scale(.97); }
+.tslot-k { font-size: 12px; font-weight: 700; color: var(--ink2); }
+.tslot-v { font-size: 22px; font-weight: 800; color: var(--ink); margin-top: 4px;
+  letter-spacing: -.6px; line-height: 1; font-variant-numeric: tabular-nums; }
+.tslot-v small { font-size: 12px; font-weight: 700; color: var(--ink3); margin-left: 2px; letter-spacing: 0; }
+.tslot-v.hi { color: var(--danger); }
+.tslot-v.lo { color: var(--temp); }
+.tslot.empty .tslot-v { color: var(--ink3); font-size: 18px; font-weight: 700; letter-spacing: 0; }
+.tslot-s { font-size: 12px; color: var(--ink3); margin-top: 4px; font-weight: 600; }
+
 /* 下次喂养渐变卡 */
 .next { margin: 14px 16px 0; border-radius: var(--r-xl); padding: 18px; position: relative;
   overflow: hidden; color: #fff; transition: transform .18s;
@@ -195,6 +213,8 @@ page {
 .seg-4 .seg-thumb { width: calc((100% - 6px) / 4); }
 .seg-5 .seg-thumb { width: calc((100% - 6px) / 5); }
 .seg-5 .seg-item { font-size: 12.5px; letter-spacing: 0; padding-left: 0; padding-right: 0; }
+.seg-6 .seg-thumb { width: calc((100% - 6px) / 6); }
+.seg-6 .seg-item { font-size: 12px; letter-spacing: 0; padding-left: 0; padding-right: 0; }
 .seg-2 .seg-thumb { width: calc((100% - 6px) / 2); }
 .dark .seg-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, .55); }
 .seg-item { position: relative; z-index: 1; flex: 1; padding: 10px 2px;
@@ -308,6 +328,7 @@ page {
 .dv { font-size: 14px; font-weight: 800; color: var(--ink); width: 66px; text-align: right;
   flex: none; font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
 .dv small { font-size: 10.5px; color: var(--ink3); font-weight: 700; margin-left: 2px; }
+.dv.wide { width: 118px; font-size: 12.5px; letter-spacing: -.3px; }
 .chart { width: 100%; height: 158px; display: block; margin-top: 12px; }
 .drow.on { background: var(--priSoft); border-radius: 10px; margin: 0 -6px; padding-left: 6px; padding-right: 6px; }
 .chart-box { position: relative; }

@@ -1,5 +1,6 @@
 // stats.js —— 统计计算（今日概览 / 近 7 天聚合 / 成长曲线 / 我的页数据条）
 var T = require('./time.js');
+var rowsOf = require('./recordRow.js');
 
 // —— 今日概览（首页 2×2 数据卡）——
 function todayStats(records) {
@@ -17,6 +18,55 @@ function todayStats(records) {
     }
   });
   return { feedCount: feedCount, feedMl: feedMl, diaper: diaper, sleepMin: sleepMin };
+}
+
+// —— 今日早测 / 晚测（各取该时段最新一笔）——
+function todayTemp(records) {
+  var start = T.todayStart();
+  var am = null, pm = null;
+  for (var i = 0; i < records.length; i++) {
+    var r = records[i];
+    if (r.type !== 'temp' || !(r.celsius > 0) || r.time < start) { continue; }
+    var slot = rowsOf.tempSlot(r);
+    if (slot === 'am' && (!am || r.time > am.time)) { am = r; }
+    if (slot === 'pm' && (!pm || r.time > pm.time)) { pm = r; }
+  }
+  return { am: am, pm: pm };
+}
+
+function slotView(rec, emptySub) {
+  if (!rec) {
+    return { empty: true, text: '待测', sub: emptySub, hi: false, lo: false, id: '' };
+  }
+  var flag = rowsOf.tempFlag(rec.celsius);
+  return {
+    empty: false,
+    text: rowsOf.fmtC(rec.celsius),
+    sub: T.fmtHM(rec.time) + (flag ? ' · ' + flag : ''),
+    hi: flag === '偏高',
+    lo: flag === '偏低',
+    id: rec.id
+  };
+}
+
+function todayTempView(records) {
+  var t = todayTemp(records);
+  return { am: slotView(t.am, '建议 8:00'), pm: slotView(t.pm, '建议 20:00') };
+}
+
+// —— 近 N 天体温：每天早、晚各保留最新一笔 ——
+function tempDays(records, n) {
+  var start = T.daysAgoStart(n - 1);
+  var map = {};
+  records.forEach(function (r) {
+    if (r.type !== 'temp' || !(r.celsius > 0) || r.time < start) { return; }
+    var key = T.dayKey(r.time);
+    if (!map[key]) { map[key] = { key: key, ts: new Date(key + 'T00:00:00').getTime(), am: null, pm: null }; }
+    var slot = rowsOf.tempSlot(r);
+    var cur = map[key][slot];
+    if (!cur || r.time > cur.time) { map[key][slot] = r; }
+  });
+  return Object.keys(map).sort().map(function (k) { return map[k]; });
 }
 
 // —— 最近一次喂养 ——
@@ -92,6 +142,7 @@ function mineStats(records, birthday) {
 }
 
 module.exports = {
-  todayStats: todayStats, lastFeed: lastFeed, lastN: lastN,
+  todayStats: todayStats, todayTemp: todayTemp, todayTempView: todayTempView, tempDays: tempDays,
+  lastFeed: lastFeed, lastN: lastN,
   dailyAgg: dailyAgg, avg: avg, growthSeries: growthSeries, mineStats: mineStats
 };
