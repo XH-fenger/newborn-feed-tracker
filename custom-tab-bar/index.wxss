@@ -1,0 +1,76 @@
+@import "../theme.wxss";
+
+/* 凸起选中：圆钮滑过底栏，两侧用反向圆角把栏边收成弧 */
+.tb {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  height: calc(86px + env(safe-area-inset-bottom));
+  font-family: var(--font);
+}
+.sheet {
+  position: absolute; left: 0; right: 0; top: 32px; bottom: 0;
+  background: var(--card);
+  box-shadow: 0 -8px 24px rgba(14, 26, 25, .06);
+}
+.dark .sheet { box-shadow: 0 -8px 24px rgba(0, 0, 0, .35); }
+.glide {
+  position: absolute; z-index: 2;
+  top: 4px; left: 0;
+  width: 25%; height: 56px;
+  pointer-events: none;
+  transition: none;
+}
+.glide.anim { transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
+.g0 { transform: translate3d(0, 0, 0); }
+.g1 { transform: translate3d(100%, 0, 0); }
+.g2 { transform: translate3d(200%, 0, 0); }
+.g3 { transform: translate3d(300%, 0, 0); }
+.bump {
+  position: absolute; left: 50%; top: 0;
+  width: 56px; height: 56px; margin-left: -28px;
+  border-radius: 50%;
+  background: var(--pri);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 16px rgba(14, 26, 25, .16);
+}
+.dark .bump { background: var(--g1); box-shadow: 0 8px 16px rgba(0, 0, 0, .4); }
+.bump-ic { position: relative; z-index: 1; width: 26px; height: 26px; }
+/* 透明块 + 同色投影，圆角把投影切成凹弧，露出页面背景 */
+.curve {
+  position: absolute; z-index: 0;
+  width: 18px; height: 18px; bottom: 0;
+  background: transparent;
+}
+.curve-l {
+  left: -16px;
+  border-top-right-radius: 18px;
+  box-shadow: 0 -10px 0 0 var(--card);
+}
+.curve-r {
+  right: -16px;
+  border-top-left-radius: 18px;
+  box-shadow: 0 -10px 0 0 var(--card);
+}
+.row {
+  position: absolute; z-index: 3;
+  left: 0; right: 0; top: 32px; bottom: 0;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  flex: 1; min-height: 48px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  gap: 3px; padding-bottom: 8px;
+  color: var(--ink3); font-size: 11px; font-weight: 600; letter-spacing: .1px;
+}
+.tab text { transition: color .24s ease; }
+.tab.on { color: var(--priInk); }
+.hv-tab { opacity: .72; }
+.tic { width: 24px; height: 24px; }
+.tic-ic {
+  width: 24px; height: 24px;
+  transition: opacity .22s ease;
+}
+.tab.on .tic-ic { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .glide.anim, .tic-ic, .tab text { transition: none; }
+}

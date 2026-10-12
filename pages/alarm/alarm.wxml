@@ -1,0 +1,31 @@
+<!-- 提醒闹钟页 —— 全屏 iOS 风格（恒定深色，不随主题切换） -->
+<view class="alarm" style="padding-top:{{navBottom + 12}}px;">
+
+  <view wx:if="{{preview}}" class="preview-chip">预览模式 · 提醒状态不会保存</view>
+
+  <view class="alarm-top">
+    <view class="bellring">
+      <view class="ring r1"></view>
+      <view class="ring r2"></view>
+      <view class="ring r3"></view>
+      <view class="core">
+        <image class="bell-ic" src="{{bell}}" mode="aspectFit" />
+      </view>
+    </view>
+
+    <view class="alarm-clock">{{clock}}</view>
+    <view class="alarm-label">该喂奶啦</view>
+    <view class="alarm-sub">{{sub}}</view>
+
+    <view class="alarm-vibe">
+      <image class="vibe-ic" src="{{vibe}}" mode="aspectFit" />
+      <text>震动提醒中…</text>
+    </view>
+  </view>
+
+  <view class="alarm-actions">
+    <view class="alarm-snooze" hover-class="al-press" hover-stay-time="80" bindtap="onSnooze">稍后提醒</view>
+    <view class="alarm-stop" hover-class="al-press" hover-stay-time="80" bindtap="onStop">停止</view>
+  </view>
+
+</view>

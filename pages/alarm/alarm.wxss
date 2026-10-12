@@ -1,0 +1,142 @@
+/* 提醒闹钟页 —— 恒定深色氛围（径向渐变，与主题/暗黑设置无关） */
+page { background: #000; }
+
+.alarm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 26px;
+  padding-right: 26px;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom));
+  background: radial-gradient(120% 80% at 50% 0%, #1b1b1e, #000 62%);
+  color: #fff;
+  animation: alarmIn .3s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes alarmIn {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 预览模式角标 */
+.preview-chip {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  margin-top: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .62);
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 20px;
+  padding: 5px 14px;
+  letter-spacing: .3px;
+}
+
+/* ---------- 铃铛 + 涟漪 ---------- */
+.alarm-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.bellring { position: relative; width: 104px; height: 104px; margin-bottom: 26px; }
+.bellring .ring {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, .35);
+  animation: rip 1.8s ease-out infinite;
+}
+.bellring .r2 { animation-delay: .6s; }
+.bellring .r3 { animation-delay: 1.2s; }
+@keyframes rip {
+  0% { transform: scale(.72); opacity: .75; }
+  100% { transform: scale(1.28); opacity: 0; }
+}
+.bellring .core {
+  position: absolute;
+  top: 22px; left: 22px; right: 22px; bottom: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.bell-ic { width: 30px; height: 30px; }
+
+/* ---------- 主体文案 ---------- */
+.alarm-clock {
+  font-size: 72px;
+  font-weight: 200;
+  letter-spacing: -2px;
+  color: #fff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  animation: apulse 1.4s ease-in-out infinite;
+}
+@keyframes apulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .55; }
+}
+.alarm-label {
+  font-size: 21px;
+  font-weight: 700;
+  margin-top: 22px;
+  letter-spacing: -.3px;
+}
+.alarm-sub {
+  font-size: 13.5px;
+  color: #9d9da4;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* ---------- 震动指示 ---------- */
+.alarm-vibe {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: #ff9f9f;
+  font-weight: 600;
+  animation: apulse 1.1s ease-in-out infinite;
+}
+.vibe-ic { width: 14px; height: 14px; }
+
+/* ---------- 底部操作 ---------- */
+.alarm-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+.alarm-snooze {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, .14);
+  border-radius: 26px;
+  padding: 15px 26px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform .18s;
+}
+.alarm-stop {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FF453A;
+  background: rgba(255, 69, 58, .14);
+  border-radius: 26px;
+  padding: 15px 38px;
+  transition: transform .18s;
+}
+.al-press { transform: scale(.95); }

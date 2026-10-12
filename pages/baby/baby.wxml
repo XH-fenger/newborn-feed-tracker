@@ -1,0 +1,46 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-t">宝宝资料</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
+
+    <view class="card anim" style="margin-top:14px">
+      <view class="fld">
+        <view class="flabel">昵称</view>
+        <input class="tx" value="{{name}}" placeholder="如：豆豆" placeholder-class="ph" bindinput="onName" />
+      </view>
+      <view class="fld">
+        <view class="flabel">性别</view>
+        <view class="seg-inline seg-2i">
+          <view class="si {{gender === 'M' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="M" bindtap="onGender">男宝</view>
+          <view class="si {{gender === 'F' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="F" bindtap="onGender">女宝</view>
+        </view>
+      </view>
+      <view class="fld">
+        <view class="flabel">出生日期</view>
+        <picker mode="date" value="{{birthday}}" end="{{today}}" bindchange="onBirthday">
+          <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+            <text class="ph-val">{{birthday}}</text>
+            <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+          </view>
+        </picker>
+      </view>
+      <view class="fld">
+        <view class="flabel">出生体重 (kg)</view>
+        <input class="tx" type="digit" value="{{birthWeight}}" placeholder="如 3.4（选填）" placeholder-class="ph" bindinput="onWeight" />
+      </view>
+    </view>
+
+    <view class="btn-save anim" hover-class="hv-save" hover-stay-time="80" bindtap="onSave">保存</view>
+  </view>
+
+  <toast id="toast" />
+</view>

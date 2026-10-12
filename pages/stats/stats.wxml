@@ -1,0 +1,148 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-t">统计</view>
+      <view class="nav-meta">{{navMeta}}</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
+
+    <view class="seg seg-4 anim">
+      <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
+      <view
+        wx:for="{{segs}}" wx:key="k"
+        class="seg-item {{seg === item.k ? 'on' : ''}}"
+        hover-class="hv-seg" hover-stay-time="60"
+        data-k="{{item.k}}" data-i="{{index}}"
+        bindtap="onSegTap"
+      >{{item.t}}</view>
+    </view>
+
+    <!-- ============ 喂养 ============ -->
+    <view class="chartcard anim" wx:if="{{seg === 'feed'}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">每日总奶量</view>
+          <view class="sub">奶粉 / 混合合计</view>
+        </view>
+        <view class="chip" wx:if="{{feed.has}}">日均 {{feed.avg}} ml</view>
+      </view>
+      <block wx:if="{{feed.has}}">
+        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="kpis">
+          <view class="kpi" wx:for="{{feed.kpis}}" wx:key="k">
+            <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
+            <view class="kl">{{item.k}}</view>
+          </view>
+        </view>
+        <view class="dlist">
+          <view class="drow" wx:for="{{feed.rows}}" wx:key="d">
+            <text class="dd">{{item.d}}</text>
+            <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--feed)"></view></view>
+            <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty">
+        <view class="et1">暂无喂养数据</view>
+        <view class="et2">记录几笔奶量后这里会出现 7 天趋势</view>
+      </view>
+    </view>
+
+    <!-- ============ 尿布 ============ -->
+    <view class="chartcard anim" wx:if="{{seg === 'diaper'}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">每日尿布次数</view>
+          <view class="sub">尿 / 便合计</view>
+        </view>
+        <view class="chip" wx:if="{{diaper.has}}">日均 {{diaper.avg}} 次</view>
+      </view>
+      <block wx:if="{{diaper.has}}">
+        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="kpis">
+          <view class="kpi" wx:for="{{diaper.kpis}}" wx:key="k">
+            <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
+            <view class="kl">{{item.k}}</view>
+          </view>
+        </view>
+        <view class="dlist">
+          <view class="drow" wx:for="{{diaper.rows}}" wx:key="d">
+            <text class="dd">{{item.d}}</text>
+            <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--diaper)"></view></view>
+            <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty">
+        <view class="et1">暂无尿布数据</view>
+        <view class="et2">记录换尿布后这里会出现次数趋势</view>
+      </view>
+    </view>
+
+    <!-- ============ 睡眠 ============ -->
+    <view class="chartcard anim" wx:if="{{seg === 'sleep'}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">每日睡眠时长</view>
+          <view class="sub">单位：小时</view>
+        </view>
+        <view class="chip" wx:if="{{sleep.has}}">日均 {{sleep.avg}} h</view>
+      </view>
+      <block wx:if="{{sleep.has}}">
+        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="kpis">
+          <view class="kpi" wx:for="{{sleep.kpis}}" wx:key="k">
+            <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
+            <view class="kl">{{item.k}}</view>
+          </view>
+        </view>
+        <view class="dlist">
+          <view class="drow" wx:for="{{sleep.rows}}" wx:key="d">
+            <text class="dd">{{item.d}}</text>
+            <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--sleep)"></view></view>
+            <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty">
+        <view class="et1">暂无睡眠数据</view>
+        <view class="et2">记录几段睡眠后这里会出现时长趋势</view>
+      </view>
+    </view>
+
+    <!-- ============ 成长 ============ -->
+    <view class="chartcard anim" wx:if="{{seg === 'growth'}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">体重成长曲线</view>
+          <view class="sub">单位：kg</view>
+        </view>
+        <view class="chip" wx:if="{{growth.has}}">{{growth.chip}}</view>
+      </view>
+      <block wx:if="{{growth.has}}">
+        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="kpis">
+          <view class="kpi" wx:for="{{growth.kpis}}" wx:key="k">
+            <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
+            <view class="kl">{{item.k}}</view>
+          </view>
+        </view>
+        <view class="dlist">
+          <view class="drow" wx:for="{{growth.rows}}" wx:key="d">
+            <text class="dd">{{item.d}}</text>
+            <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--growth)"></view></view>
+            <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty">
+        <view class="et1">暂无成长数据</view>
+        <view class="et2">在「宝宝资料」填写出生体重，并记录测量值</view>
+      </view>
+    </view>
+
+  </view>
+</view>

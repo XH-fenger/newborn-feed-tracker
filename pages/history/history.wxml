@@ -1,0 +1,62 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>首页</text>
+      </view>
+      <view class="nav-t">全部记录</view>
+      <view class="nav-meta">共 {{total}} 条</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
+
+    <view class="seg seg-4 anim">
+      <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
+      <view
+        wx:for="{{filters}}" wx:key="k"
+        class="seg-item {{filter === item.k ? 'on' : ''}}"
+        hover-class="hv-seg" hover-stay-time="60"
+        data-k="{{item.k}}" data-i="{{index}}"
+        bindtap="onSegTap"
+      >{{item.t}}</view>
+    </view>
+
+    <block wx:if="{{groups.length}}">
+      <block wx:for="{{groups}}" wx:for-item="g" wx:key="key">
+        <view class="sec anim">{{g.label}}</view>
+        <view class="card anim">
+          <view
+            class="row"
+            wx:for="{{g.rows}}"
+            wx:key="id"
+            hover-class="hv-row"
+            hover-stay-time="60"
+            data-id="{{item.id}}"
+            bindtap="onRowTap"
+          >
+            <view class="ric" style="background:var(--{{item.icBg}})">
+              <image class="ric-ic" src="{{ic[item.iconKey]}}" mode="aspectFit" />
+            </view>
+            <view class="rbody">
+              <view class="rt">{{item.title}}</view>
+              <view class="rd">{{item.detail}}</view>
+            </view>
+            <view class="rr">{{item.hm}}</view>
+          </view>
+        </view>
+      </block>
+    </block>
+
+    <view class="card anim" wx:else>
+      <view class="empty">
+        <image class="eic" src="{{ic.empty}}" mode="aspectFit" />
+        <view class="et1">暂无{{filter === 'all' ? '' : (filter === 'feed' ? '喂养' : filter === 'diaper' ? '尿布' : '睡眠')}}记录</view>
+        <view class="et2">切到「记一笔」开始记录吧</view>
+      </view>
+    </view>
+
+  </view>
+</view>

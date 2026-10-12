@@ -1,0 +1,2 @@
+/* 宝宝资料页专属：无（公共样式见 app.wxss） */
+.ph { color: var(--ink3); font-weight: 400; }

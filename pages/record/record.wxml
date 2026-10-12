@@ -1,0 +1,222 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>首页</text>
+      </view>
+      <view class="nav-t">{{editing ? '编辑记录' : '记一笔'}}</view>
+      <view class="nav-meta">{{navMeta}}</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
+
+    <!-- 类型分段 -->
+    <view class="seg seg-4 anim">
+      <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
+      <view
+        wx:for="{{segs}}" wx:key="k"
+        class="seg-item {{seg === item.k ? 'on' : ''}}"
+        hover-class="hv-seg" hover-stay-time="60"
+        data-k="{{item.k}}" data-i="{{index}}"
+        bindtap="onSegTap"
+      >{{item.t}}</view>
+    </view>
+
+    <!-- ============ 喂养 ============ -->
+    <block wx:if="{{seg === 'feed'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">喂养方式</view>
+          <view class="seg-inline">
+            <view class="si {{feedMethod === 'breast' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="breast" bindtap="onFeedMethod">母乳</view>
+            <view class="si {{feedMethod === 'formula' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="formula" bindtap="onFeedMethod">奶粉</view>
+            <view class="si {{feedMethod === 'mixed' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="mixed" bindtap="onFeedMethod">混合</view>
+          </view>
+        </view>
+
+        <view class="fld" wx:if="{{showSide}}">
+          <view class="flabel">哺乳侧</view>
+          <view class="seg-inline">
+            <view class="si {{side === 'left' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="left" bindtap="onSide">左侧</view>
+            <view class="si {{side === 'right' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="right" bindtap="onSide">右侧</view>
+            <view class="si {{side === 'both' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="both" bindtap="onSide">双侧</view>
+          </view>
+        </view>
+
+        <view class="fld" wx:if="{{showDur}}">
+          <view class="flabel">母乳时长</view>
+          <view class="timerbox">
+            <view class="clk {{timing ? 'tag' : ''}}">{{timerTxt}}</view>
+            <view class="btn-pill" hover-class="hv-pill" hover-stay-time="80" bindtap="toggleTimer">
+              {{timing ? '结束计时' : '开始计时'}}
+            </view>
+          </view>
+          <view class="stepper" style="margin-top:10px">
+            <view class="st {{dur <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepDur">−</view>
+            <view class="num">
+              <input class="num-in" type="digit" value="{{dur}}" disabled="{{timing}}" bindinput="onDurInput" bindblur="onDurBlur" />
+              <text class="unit">分</text>
+            </view>
+            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepDur">+</view>
+          </view>
+        </view>
+
+        <view class="fld" wx:if="{{showAmt}}">
+          <view class="flabel">{{feedMethod === 'breast' ? '吸出奶量 (ml)' : '奶量 (ml)'}}</view>
+          <view class="fhint" wx:if="{{feedMethod === 'breast'}}">吸出瓶喂时填写，亲喂可不填</view>
+          <view class="stepper">
+            <view class="st {{amt <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepAmt">−</view>
+            <view class="num">
+              <input class="num-in" type="digit" value="{{amt}}" bindinput="onAmtInput" bindblur="onAmtBlur" />
+              <text class="unit">ml</text>
+            </view>
+            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepAmt">+</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card anim">
+        <view class="fld">
+          <view class="flabel">记录时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{dateStr}}" bindchange="onDateChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{dateStr}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{timeStr}}" bindchange="onTimeChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{timeStr}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选，如：哭闹后安抚" placeholder-class="ph" bindinput="onNote" />
+        </view>
+      </view>
+    </block>
+
+    <!-- ============ 尿布 ============ -->
+    <block wx:if="{{seg === 'diaper'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">类型</view>
+          <view class="seg-inline">
+            <view class="si {{diaperType === 'pee' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="pee" bindtap="onDiaperType">尿</view>
+            <view class="si {{diaperType === 'poop' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="poop" bindtap="onDiaperType">便</view>
+            <view class="si {{diaperType === 'both' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="both" bindtap="onDiaperType">都有</view>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">记录时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{dateStr}}" bindchange="onDateChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{dateStr}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{timeStr}}" bindchange="onTimeChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{timeStr}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选，如：偏稀" placeholder-class="ph" bindinput="onNote" />
+        </view>
+      </view>
+    </block>
+
+    <!-- ============ 睡眠 ============ -->
+    <block wx:if="{{seg === 'sleep'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">开始时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{sDate}}" bindchange="onSDate">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{sDate}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{sTime}}" bindchange="onSTime">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{sTime}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">结束时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{eDate}}" bindchange="onEDate">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{eDate}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{eTime}}" bindchange="onETime">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{eTime}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">睡眠时长</view>
+          <view class="dur-show">{{sleepDurTxt}}</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选" placeholder-class="ph" bindinput="onNote" />
+        </view>
+      </view>
+    </block>
+
+    <!-- ============ 成长 ============ -->
+    <block wx:if="{{seg === 'growth'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">体重 (kg)</view>
+          <input class="tx" type="digit" value="{{weight}}" placeholder="如 4.2" placeholder-class="ph" bindinput="onWeight" />
+        </view>
+        <view class="fld">
+          <view class="flabel">身高 (cm)</view>
+          <input class="tx" type="digit" value="{{height}}" placeholder="如 54.0" placeholder-class="ph" bindinput="onHeight" />
+        </view>
+        <view class="fld">
+          <view class="flabel">头围 (cm)</view>
+          <input class="tx" type="digit" value="{{headCirc}}" placeholder="如 36.5" placeholder-class="ph" bindinput="onHead" />
+        </view>
+        <view class="fld">
+          <view class="flabel">记录日期</view>
+          <picker mode="date" value="{{dateStr}}" bindchange="onDateChange">
+            <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+              <text class="ph-val">{{dateStr}}</text>
+              <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+            </view>
+          </picker>
+        </view>
+      </view>
+    </block>
+
+    <!-- 保存 / 删除 -->
+    <view class="btn-save anim" hover-class="hv-save" hover-stay-time="80" bindtap="onSave">保存记录</view>
+    <view wx:if="{{editing}}" class="btn-del anim" hover-class="hv-save" hover-stay-time="80" bindtap="onDelete">删除这条记录</view>
+  </view>
+
+  <toast id="toast" />
+</view>

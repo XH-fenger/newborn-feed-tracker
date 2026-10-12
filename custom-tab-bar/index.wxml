@@ -1,0 +1,29 @@
+<view class="tb t-{{theme}} {{dark ? 'dark' : ''}}">
+  <view class="sheet"></view>
+  <view class="glide g{{selected}} {{glide ? 'anim' : ''}}" aria-hidden="true">
+    <view class="bump">
+      <view class="curve curve-l"></view>
+      <view class="curve curve-r"></view>
+      <image class="bump-ic" src="{{currentIcon}}" mode="aspectFit" />
+    </view>
+  </view>
+  <view class="row">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="text"
+      class="tab {{selected === index ? 'on' : ''}}"
+      hover-class="hv-tab"
+      hover-stay-time="100"
+      data-i="{{index}}"
+      bindtap="onTap"
+      aria-role="tab"
+      aria-selected="{{selected === index}}"
+      aria-label="{{item.text}}"
+    >
+      <view class="tic">
+        <image class="tic-ic" src="{{item.icon}}" mode="aspectFit" />
+      </view>
+      <text>{{item.text}}</text>
+    </view>
+  </view>
+</view>

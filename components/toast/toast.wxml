@@ -1,0 +1,4 @@
+<view class="toast {{show ? 'show' : ''}}">
+  <image class="t-ic" src="{{icon}}" mode="aspectFit" />
+  <text class="t-tx">{{msg}}</text>
+</view>

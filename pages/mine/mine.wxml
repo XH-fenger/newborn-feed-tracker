@@ -1,0 +1,130 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <!-- 空导航条（滚动时浮现毛玻璃 + 发丝线） -->
+  <view class="nav nav-blank {{navSc ? 'sc' : ''}}"></view>
+
+  <view class="page-body" style="padding-top:{{navBottom + 6}}px">
+
+    <!-- ============ 资料头卡（整卡可点） ============ -->
+    <view class="profile anim">
+      <view class="profile-hd" hover-class="hv-prof" hover-stay-time="60" bindtap="goBaby">
+        <view class="pava">
+          <image class="pava-ic" src="{{ic.baby}}" mode="aspectFill" />
+          <view class="pen">
+            <image class="pen-ic" src="{{ic.pen}}" mode="aspectFit" />
+          </view>
+        </view>
+        <view>
+          <view class="pnm">{{profile.name}}</view>
+          <view class="pmt">{{profile.meta}}</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="profile-stats">
+        <view class="pstat"><b>{{profile.count}}<small>条</small></b><span>累计记录</span></view>
+        <view class="pstat"><b>{{profile.days}}<small>天</small></b><span>已坚持</span></view>
+        <view class="pstat"><b>{{profile.daily}}<small>条</small></b><span>日均</span></view>
+      </view>
+    </view>
+
+    <!-- ============ 提醒 ============ -->
+    <view class="sec anim">提醒</view>
+    <view class="card anim">
+      <view class="row">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.bell}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">间隔提醒</view>
+          <view class="rd">超过建议间隔时全屏提醒</view>
+        </view>
+        <view class="switch {{reminderEnabled ? 'on' : ''}}" hover-class="sw-press" hover-stay-time="80" bindtap="toggleReminder">
+          <view class="knob"></view>
+        </view>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickInterval">
+        <view class="ric" style="background:var(--diaperS)">
+          <image class="ric-ic" src="{{ic.clock}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">建议间隔</view>
+          <view class="rd">新生儿 2-3 小时一次</view>
+        </view>
+        <view class="rr">{{intervalTxt}} <text class="chev">›</text></view>
+      </view>
+    </view>
+
+    <!-- ============ 外观主题 ============ -->
+    <view class="sec sec-row anim">外观主题<text class="secv">{{theme === 'indigo' ? '靛蓝' : theme === 'mint' ? '晨雾青' : theme === 'sun' ? '暖阳橘' : '莓果粉'}}</text></view>
+    <view class="card anim">
+      <view class="tgrid">
+        <view
+          wx:for="{{themes}}" wx:key="k"
+          class="tsw {{theme === item.k ? 'on' : ''}}"
+          hover-class="hv-tsw" hover-stay-time="60"
+          data-k="{{item.k}}"
+          bindtap="onThemePick"
+        >
+          <view class="dot" style="background:{{item.dot}}"></view>
+          <text class="tname">{{item.name}}</text>
+          <view class="tick"><image class="tick-ic" src="{{ic.check}}" mode="aspectFit" /></view>
+        </view>
+      </view>
+      <view class="row row-sep">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">深色模式</view>
+          <view class="rd">夜间柔光，呵护眼睛</view>
+        </view>
+        <view class="switch {{dark ? 'on' : ''}}" hover-class="sw-press" hover-stay-time="80" bindtap="toggleDark">
+          <view class="knob"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ============ 数据 ============ -->
+    <view class="sec anim">数据</view>
+    <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExport">
+        <view class="ric" style="background:var(--growthS)">
+          <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导出数据</view>
+          <view class="rd">生成 JSON 备份，可发给微信好友</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doImport">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导入数据</view>
+          <view class="rd">从聊天文件恢复记录</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+    </view>
+
+    <!-- ============ 危险区（独立成卡，物理隔离） ============ -->
+    <view class="card card-danger anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doClear">
+        <view class="ric" style="background:#FDE9E9">
+          <image class="ric-ic" src="{{ic.trash}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt danger">清空数据</view>
+          <view class="rd">不可恢复，建议先导出备份</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+    </view>
+
+    <view class="foot anim">喂养记录 v1.0.0<br />数据全部保存在本机，不上传云端</view>
+  </view>
+
+  <toast id="toast" />
+</view>

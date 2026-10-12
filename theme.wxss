@@ -1,0 +1,82 @@
+/* ============================================================
+   主题令牌 · Soft UI Evolution（与原型逐值对齐）
+   用法：页面/组件根节点挂 class="t-{{theme}} {{dark?'dark':''}}"
+   4 套主题同特异性，dark 定义在后 → 同名变量覆盖生效
+   ============================================================ */
+
+/* —— 公共中性色（亮色默认，所有主题共享） —— */
+.t-indigo, .t-mint, .t-sun, .t-berry {
+  --card: #FFFFFF;
+  --fill: #F1F5F4;
+  --ink: #0E1A19;
+  --ink2: #5B6B69;
+  --ink3: #6B7674;
+  --line: rgba(14, 26, 25, .07);
+  --line2: rgba(14, 26, 25, .13);
+  --r-xl: 24px; --r-lg: 20px; --r-md: 14px; --r-sm: 10px;
+  --sh1: 0 1px 2px rgba(14, 40, 38, .05), 0 6px 16px rgba(14, 40, 38, .06);
+  --sh2: 0 12px 34px rgba(14, 40, 38, .13);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
+    "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  /* 语义类别色（各主题一致，保证语义可辨） */
+  --diaper: #BE7210; --diaperS: #FDF1DE;
+  --sleep: #6A57EE;  --sleepS: #EEEBFE;
+  --growth: #2C6FE0; --growthS: #E8F0FE;
+  --danger: #D93A3F;
+}
+
+/* —— 主题 A：晨雾青 —— */
+.t-mint {
+  --bgRgb: 243, 248, 247;
+  --pri: #0C9185; --pri2: #23C0AE; --priInk: #0A7568; --priSoft: #E1F6F3;
+  --g1: #0A7A70; --g2: #189F92;
+  --shPri: 0 10px 24px rgba(15, 163, 150, .32);
+  --feed: #0C9185; --feedS: #E1F6F3;
+}
+/* —— 主题 B：暖阳橘 —— */
+.t-sun {
+  --bgRgb: 252, 248, 244;
+  --pri: #CE6514; --pri2: #FFA95C; --priInk: #A8500F; --priSoft: #FFF0E1;
+  --g1: #A8500F; --g2: #D97427;
+  --shPri: 0 10px 24px rgba(206, 101, 20, .34);
+  --feed: #CE6514; --feedS: #FFF0E1;
+}
+/* —— 主题 C：莓果粉 —— */
+.t-berry {
+  --bgRgb: 252, 247, 250;
+  --pri: #D04E8F; --pri2: #F58BC1; --priInk: #AE3676; --priSoft: #FDEAF3;
+  --g1: #B03A75; --g2: #DE6BA6;
+  --shPri: 0 10px 24px rgba(208, 78, 143, .32);
+  --feed: #D04E8F; --feedS: #FDEAF3;
+}
+/* —— 主题 D：靛蓝（默认） —— */
+.t-indigo {
+  --bgRgb: 244, 246, 252;
+  --pri: #5A67E8; --pri2: #8B96FF; --priInk: #3A46B8; --priSoft: #EAEDFE;
+  --g1: #4149C4; --g2: #6F79E8;
+  --shPri: 0 10px 24px rgba(90, 103, 232, .32);
+  --feed: #5A67E8; --feedS: #EAEDFE;
+}
+
+/* —— 暗黑模式：覆盖中性令牌 + 提亮语义色（渐变头图保留） —— */
+.dark {
+  --bgRgb: 18, 20, 24;
+  --card: #1C1E23;
+  --fill: #272A30;
+  --ink: #ECEEF1;
+  --ink2: #A7B0B6;
+  --ink3: #8E97A0;
+  --line: rgba(255, 255, 255, .08);
+  --line2: rgba(255, 255, 255, .15);
+  --sh1: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 16px rgba(0, 0, 0, .36);
+  --sh2: 0 16px 40px rgba(0, 0, 0, .62);
+  /* 语义浅底：暗黑下统一中性灰（贴近 iOS 暗色图标块） */
+  --priSoft: rgba(255, 255, 255, .07);
+  --feedS: rgba(255, 255, 255, .07);
+  --diaperS: rgba(255, 255, 255, .07);
+  --sleepS: rgba(255, 255, 255, .07);
+  --growthS: rgba(255, 255, 255, .07);
+  /* 语义/主色提亮，保证暗底可读 */
+  --pri: #3FD3C1; --pri2: #5FE0D2; --priInk: #7FE9DC;
+  --feed: #3FD6C6; --diaper: #F2B24A; --sleep: #A99BFF; --growth: #6FB0FF; --danger: #FF6B6F;
+}
