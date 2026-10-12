@@ -6,6 +6,7 @@ function defaultDb() {
   return {
     baby: { name: '宝宝', gender: 'M', birthday: '', birthWeight: '' },
     records: [],
+    todos: [],
     settings: { theme: 'indigo', dark: false, reminderEnabled: true, feedInterval: 180,
       alarmSnoozeUntil: 0, alarmDismissAt: 0, alarmFeedId: '' }
   };
@@ -19,6 +20,7 @@ function db() {
   }
   if (!v.settings) { v.settings = defaultDb().settings; }
   if (!v.baby) { v.baby = defaultDb().baby; }
+  if (!Array.isArray(v.todos)) { v.todos = []; }
   return v;
 }
 
@@ -26,6 +28,10 @@ function saveDb(d) { wx.setStorageSync(KEY, d); }
 
 function genId() {
   return 'r_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+}
+
+function genTodoId() {
+  return 't_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
 }
 
 /* ---------- 记录 CRUD ---------- */
@@ -77,6 +83,73 @@ function deleteRecord(id) {
   saveDb(d);
 }
 
+/* ---------- 待办（疫苗 / 体检 / 其他，与喂养记录分开） ---------- */
+function byDue(a, b) {
+  if (a.due !== b.due) { return a.due - b.due; }
+  return String(a.id).localeCompare(String(b.id));
+}
+
+function todos() { return db().todos.slice(); }
+
+function addTodo(todo) {
+  var d = db();
+  todo.id = todo.id || genTodoId();
+  todo.done = !!todo.done;
+  todo.doneAt = todo.doneAt || 0;
+  todo.note = todo.note || '';
+  d.todos.push(todo);
+  d.todos.sort(byDue);
+  saveDb(d);
+  return todo;
+}
+
+// 按标题去重插入，返回实际新增条数（生成日程时跳过已有同名事项）
+function addTodos(list) {
+  var d = db();
+  var exist = {};
+  d.todos.forEach(function (t) { exist[t.title] = 1; });
+  var n = 0;
+  list.forEach(function (t) {
+    if (!t || !t.title || exist[t.title]) { return; }
+    d.todos.push({
+      id: genTodoId(),
+      kind: t.kind || 'other',
+      title: t.title,
+      due: t.due,
+      note: t.note || '',
+      done: false,
+      doneAt: 0
+    });
+    exist[t.title] = 1;
+    n++;
+  });
+  d.todos.sort(byDue);
+  if (n) { saveDb(d); }
+  return n;
+}
+
+function updateTodo(id, patch) {
+  var d = db();
+  for (var i = 0; i < d.todos.length; i++) {
+    if (d.todos[i].id === id) {
+      var merged = {};
+      for (var k in d.todos[i]) { merged[k] = d.todos[i][k]; }
+      for (var k2 in patch) { merged[k2] = patch[k2]; }
+      merged.id = id;
+      d.todos[i] = merged;
+      break;
+    }
+  }
+  d.todos.sort(byDue);
+  saveDb(d);
+}
+
+function deleteTodo(id) {
+  var d = db();
+  d.todos = d.todos.filter(function (t) { return t.id !== id; });
+  saveDb(d);
+}
+
 /* ---------- 宝宝档案 ---------- */
 function baby() { return db().baby; }
 function saveBaby(b) {
@@ -108,6 +181,7 @@ function importDb(obj, mode) {
     });
     d.records.sort(function (a, b) { return b.time - a.time; });
     if (obj.baby) { d.baby = obj.baby; }
+    mergeTodos(d, obj.todos);
     if (obj.settings) {
       var s = obj.settings;
       // 主题/暗黑是设备偏好，不随导入数据走（与 overwrite 模式口径一致）
@@ -129,7 +203,30 @@ function importDb(obj, mode) {
     return n;
   });
   fresh.records.sort(function (a, b) { return b.time - a.time; });
+  fresh.todos = [];
+  mergeTodos(fresh, obj.todos);
   saveDb(fresh);
+}
+
+function mergeTodos(d, list) {
+  if (!Array.isArray(list)) { return; }
+  if (!Array.isArray(d.todos)) { d.todos = []; }
+  var exist = {};
+  d.todos.forEach(function (t) { if (t.id) { exist[t.id] = 1; } });
+  list.forEach(function (t) {
+    if (!t || typeof t.title !== 'string' || typeof t.due !== 'number') { return; }
+    if (t.id && exist[t.id]) { return; }
+    d.todos.push({
+      id: t.id || genTodoId(),
+      kind: t.kind || 'other',
+      title: t.title,
+      due: t.due,
+      note: t.note || '',
+      done: !!t.done,
+      doneAt: t.doneAt || 0
+    });
+  });
+  d.todos.sort(byDue);
 }
 
 function clearRecords() {
@@ -145,6 +242,8 @@ module.exports = {
   db: db, saveDb: saveDb, genId: genId,
   records: records, addRecord: addRecord, getRecord: getRecord,
   updateRecord: updateRecord, deleteRecord: deleteRecord,
+  todos: todos, addTodo: addTodo, addTodos: addTodos,
+  updateTodo: updateTodo, deleteTodo: deleteTodo,
   baby: baby, saveBaby: saveBaby,
   settings: settings, saveSetting: saveSetting,
   importDb: importDb, clearRecords: clearRecords

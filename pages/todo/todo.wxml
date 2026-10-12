@@ -1,0 +1,144 @@
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-meta">{{openCount}} 件未完成</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
+
+    <view class="todo-actions">
+      <view class="btn-save" hover-class="hv-save" hover-stay-time="80" bindtap="onAdd">添加</view>
+      <view class="todo-ghost" hover-class="hv-ghost" hover-stay-time="80" bindtap="onDraft">生成日程</view>
+    </view>
+    <view class="todo-hint" wx:if="{{openCount || doneCount}}">点右侧日期可直接改期，点事项可改名称和备注</view>
+
+    <view class="card anim" wx:if="{{formOpen}}" style="margin-top:14px">
+      <view class="fld">
+        <view class="flabel">类型</view>
+        <view class="seg-inline">
+          <view
+            wx:for="{{kinds}}" wx:key="k"
+            class="si {{form.kind === item.k ? 'on' : ''}}"
+            hover-class="hv-si" hover-stay-time="60"
+            data-k="{{item.k}}"
+            bindtap="onKind"
+          >{{item.t}}</view>
+        </view>
+      </view>
+      <view class="fld">
+        <view class="flabel">事项</view>
+        <input class="tx" value="{{form.title}}" maxlength="40" placeholder="如：乙肝疫苗第二针" placeholder-class="ph" bindinput="onTitle" />
+        <view class="ferr" wx:if="{{formErr}}">请填写事项</view>
+      </view>
+      <view class="fld">
+        <view class="flabel">日期</view>
+        <picker mode="date" value="{{form.due}}" bindchange="onDue">
+          <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+            <text class="ph-val">{{form.due}}</text>
+            <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+          </view>
+        </picker>
+      </view>
+      <view class="fld">
+        <view class="flabel">备注</view>
+        <input class="tx" value="{{form.note}}" maxlength="80" placeholder="选填，如接种门诊" placeholder-class="ph" bindinput="onNote" />
+      </view>
+      <view class="fhint fhint-pad">日期只精确到天。到了当天或已过期，打开小程序时会提示。</view>
+      <view class="todo-form-actions">
+        <view class="todo-link" hover-class="hv-ghost" hover-stay-time="60" bindtap="onFormCancel">取消</view>
+        <view class="todo-link danger" wx:if="{{form.id}}" hover-class="hv-ghost" hover-stay-time="60" bindtap="onFormDelete">删除</view>
+        <view class="btn-save" hover-class="hv-save" hover-stay-time="80" bindtap="onFormSave">保存</view>
+      </view>
+    </view>
+
+    <block wx:if="{{groups.length}}">
+      <block wx:for="{{groups}}" wx:for-item="g" wx:key="key">
+        <view class="sec anim">{{g.label}}</view>
+        <view class="card card-clip anim">
+          <swipe-row
+            wx:for="{{g.rows}}"
+            wx:key="id"
+            line="{{index > 0}}"
+            open="{{openId === item.id}}"
+            data-id="{{item.id}}"
+            bind:drag="onSwipeDrag"
+            bind:open="onSwipeOpen"
+            bind:close="onSwipeClose"
+            bind:delete="onSwipeDelete"
+          >
+            <view class="row">
+              <view class="todo-check {{item.done ? 'on' : ''}}" catchtap="onToggle" data-id="{{item.id}}" aria-role="button" aria-label="{{item.done ? '标为未完成' : '标为已完成'}}">
+                <view class="box">
+                  <image wx:if="{{item.done}}" class="tick" src="{{icCheck}}" mode="aspectFit" />
+                </view>
+              </view>
+              <view class="rbody" data-id="{{item.id}}" bindtap="onRowTap">
+                <view class="rt {{item.done ? 'done' : ''}}">{{item.title}}</view>
+                <view class="rd">{{item.meta}}</view>
+              </view>
+              <picker mode="date" value="{{item.due}}" data-id="{{item.id}}" bindchange="onRowDue">
+                <view class="rr todo-due {{item.late ? 'danger' : ''}}" aria-role="button" aria-label="修改日期">
+                  <image class="todo-cal" src="{{icCal}}" mode="aspectFit" />
+                  <text>{{item.when}}</text>
+                </view>
+              </picker>
+            </view>
+          </swipe-row>
+        </view>
+      </block>
+    </block>
+
+    <view class="sec sec-row sec-tap anim" wx:if="{{doneCount}}" hover-class="hv-sec" hover-stay-time="80" bindtap="onToggleDoneList">
+      已完成 {{doneCount}} 件
+      <text class="secv">{{showDone ? '收起' : '展开'}}</text>
+    </view>
+    <view class="card card-clip anim" wx:if="{{showDone && doneRows.length}}">
+      <swipe-row
+        wx:for="{{doneRows}}"
+        wx:key="id"
+        line="{{index > 0}}"
+        open="{{openId === item.id}}"
+        data-id="{{item.id}}"
+        bind:drag="onSwipeDrag"
+        bind:open="onSwipeOpen"
+        bind:close="onSwipeClose"
+        bind:delete="onSwipeDelete"
+      >
+        <view class="row">
+          <view class="todo-check on" catchtap="onToggle" data-id="{{item.id}}" aria-role="button" aria-label="标为未完成">
+            <view class="box">
+              <image class="tick" src="{{icCheck}}" mode="aspectFit" />
+            </view>
+          </view>
+          <view class="rbody" data-id="{{item.id}}" bindtap="onRowTap">
+            <view class="rt done">{{item.title}}</view>
+            <view class="rd">{{item.meta}}</view>
+          </view>
+          <picker mode="date" value="{{item.due}}" data-id="{{item.id}}" bindchange="onRowDue">
+            <view class="rr todo-due" aria-role="button" aria-label="修改日期">
+              <image class="todo-cal" src="{{icCal}}" mode="aspectFit" />
+              <text>{{item.when}}</text>
+            </view>
+          </picker>
+        </view>
+      </swipe-row>
+    </view>
+
+    <view class="card anim" wx:if="{{!groups.length && !doneCount}}" style="margin-top:14px">
+      <view class="empty">
+        <image class="eic" src="{{icEmpty}}" mode="aspectFit" />
+        <view class="et1">还没有待办</view>
+        <view class="et2">记下疫苗、体检，或按出生日生成常见日程</view>
+      </view>
+    </view>
+
+  </view>
+
+  <toast id="toast" />
+</view>

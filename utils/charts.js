@@ -8,6 +8,13 @@ function rgbaOf(hex, a) {
   return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
+var animSeq = 0;
+var motion = require('./motion.js');
+
+function schedule(cv, fn) {
+  if (cv && cv.requestAnimationFrame) { cv.requestAnimationFrame(fn); }
+}
+
 function roundedRect(ctx, x, y, w, h, r) {
   if (h <= 0 || w <= 0) { return; }
   r = Math.min(r, w / 2, h / 2);
@@ -83,38 +90,43 @@ function drawBar(ctx, cv, w, h, o) {
 
   function drawAxes() {
     ctx.fillStyle = o.axl;
-    ctx.font = '600 ' + Math.round(9 * sx) + 'px sans-serif';
+    ctx.font = '600 ' + Math.round(12 * sx) + 'px sans-serif';
     ctx.textAlign = 'center';
     bars.forEach(function (b) {
       ctx.fillText(b.label, b.x + barW / 2, 150 * sy);
     });
   }
 
-  var t0 = null;
+  var seq = ++animSeq;
+  var t0 = 0;
   var total = n * 60 + 420;
-  function frame(ts) {
-    if (t0 === null) { t0 = ts; }
-    var el = ts - t0;
-    ctx.clearRect(0, 0, w, h);
-    drawGrid();
-    bars.forEach(function (b, i) {
-      var p = Math.min(1, Math.max(0, (el - i * 60) / 380));
-      var eased = 1 - Math.pow(1 - p, 3);
-      var bh = b.hgt * eased;
-      if (bh < 1) { return; }
-      var grad = ctx.createLinearGradient(0, base - bh, 0, base);
-      grad.addColorStop(0, o.color);
-      grad.addColorStop(1, rgbaOf(o.color, .28));
-      ctx.fillStyle = grad;
-      roundedRect(ctx, b.x, base - bh, barW, bh, 8 * sx);
-      ctx.fill();
-    });
-    drawAxes();
-    if (el < total) {
-      if (cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); }
-    }
+  function frame() {
+    if (seq !== animSeq) { return; }
+    var now = Date.now();
+    if (!t0) { t0 = now; }
+    var el = now - t0;
+    try {
+      ctx.clearRect(0, 0, w, h);
+      drawGrid();
+      bars.forEach(function (b, i) {
+        var p = Math.min(1, Math.max(0, (el - i * 60) / 380));
+        var eased = 1 - Math.pow(1 - p, 3);
+        var bh = b.hgt * eased;
+        if (bh < 1) { return; }
+        var grad = ctx.createLinearGradient(0, base - bh, 0, base);
+        grad.addColorStop(0, o.color);
+        grad.addColorStop(1, rgbaOf(o.color, .28));
+        ctx.fillStyle = grad;
+        roundedRect(ctx, b.x, base - bh, barW, bh, 8 * sx);
+        ctx.fill();
+      });
+      drawAxes();
+    } catch (e) { return; }
+    if (el < total) { schedule(cv, frame); }
   }
-  if (cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); } else { frame(0); frame(1000); }
+  if (motion.reduced()) { t0 = Date.now() - total; frame(); return; }
+  if (cv && cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); }
+  else { t0 = Date.now() - total; frame(); }
 }
 
 /* ---------- 成长折线图（渐变面积 + 描线揭示 + 白心数据点） ---------- */
@@ -158,69 +170,63 @@ function drawLine(ctx, cv, w, h, o) {
   }
   function drawAxes() {
     ctx.fillStyle = o.axl;
-    ctx.font = '600 ' + Math.round(9 * sx) + 'px sans-serif';
+    ctx.font = '600 ' + Math.round(12 * sx) + 'px sans-serif';
     ctx.textAlign = 'center';
     pts.forEach(function (p, i) { ctx.fillText(p.label, xOf(i), 150 * sy); });
   }
 
-  var t0 = null;
-  function frame(ts) {
-    if (t0 === null) { t0 = ts; }
-    var p = Math.min(1, (ts - t0) / 800);
+  var seq = ++animSeq;
+  var t0 = 0;
+  function frame() {
+    if (seq !== animSeq) { return; }
+    var now = Date.now();
+    if (!t0) { t0 = now; }
+    var p = Math.min(1, (now - t0) / 800);
     var eased = 1 - Math.pow(1 - p, 3);
     var cutX = L + (R - L) * eased;
-
-    ctx.clearRect(0, 0, w, h);
-    drawGrid();
-
-    // 面积 + 折线（clip 揭示）
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, cutX, h);
-    ctx.clip();
-
-    // 面积
-    ctx.beginPath();
-    ctx.moveTo(xOf(0), base);
-    pts.forEach(function (pt, i) { ctx.lineTo(xOf(i), yOf(pt.v)); });
-    ctx.lineTo(xOf(n - 1), base);
-    ctx.closePath();
-    ctx.fillStyle = rgbaOf(o.color, .2 * p);
-    ctx.fill();
-
-    // 折线
-    ctx.beginPath();
-    pts.forEach(function (pt, i) {
-      var x = xOf(i), y = yOf(pt.v);
-      if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
-    });
-    ctx.strokeStyle = o.color;
-    ctx.lineWidth = 3 * sx;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.stroke();
-    ctx.restore();
-
-    // 白心数据点（揭示到该点后弹出）
-    pts.forEach(function (pt, i) {
-      var x = xOf(i);
-      if (x > cutX + 1) { return; }
+    try {
+      ctx.clearRect(0, 0, w, h);
+      drawGrid();
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(x, yOf(pt.v), 4.5 * sx, 0, Math.PI * 2);
-      ctx.fillStyle = o.card;
+      ctx.rect(0, 0, cutX, h);
+      ctx.clip();
+      ctx.beginPath();
+      ctx.moveTo(xOf(0), base);
+      pts.forEach(function (pt, i) { ctx.lineTo(xOf(i), yOf(pt.v)); });
+      ctx.lineTo(xOf(n - 1), base);
+      ctx.closePath();
+      ctx.fillStyle = rgbaOf(o.color, .2 * p);
       ctx.fill();
-      ctx.lineWidth = 3 * sx;
+      ctx.beginPath();
+      pts.forEach(function (pt, i) {
+        var x = xOf(i), y = yOf(pt.v);
+        if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+      });
       ctx.strokeStyle = o.color;
+      ctx.lineWidth = 3 * sx;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
       ctx.stroke();
-    });
-
-    drawAxes();
-
-    if (p < 1) {
-      if (cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); }
-    }
+      ctx.restore();
+      pts.forEach(function (pt, i) {
+        var x = xOf(i);
+        if (x > cutX + 1) { return; }
+        ctx.beginPath();
+        ctx.arc(x, yOf(pt.v), 4.5 * sx, 0, Math.PI * 2);
+        ctx.fillStyle = o.card;
+        ctx.fill();
+        ctx.lineWidth = 3 * sx;
+        ctx.strokeStyle = o.color;
+        ctx.stroke();
+      });
+      drawAxes();
+    } catch (e) { return; }
+    if (p < 1) { schedule(cv, frame); }
   }
-  if (cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); } else { frame(0); frame(1000); }
+  if (motion.reduced()) { t0 = Date.now() - 800; frame(); return; }
+  if (cv && cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); }
+  else { t0 = Date.now() - 800; frame(); }
 }
 
 module.exports = { setupCanvas: setupCanvas, drawBar: drawBar, drawLine: drawLine, rgbaOf: rgbaOf };

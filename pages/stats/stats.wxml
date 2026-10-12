@@ -2,7 +2,6 @@
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
-      <view class="nav-t">统计</view>
       <view class="nav-meta">{{navMeta}}</view>
     </view>
   </view>
@@ -25,12 +24,17 @@
       <view class="ch-h">
         <view>
           <view class="h3">每日总奶量</view>
-          <view class="sub">奶粉 / 混合合计</view>
+          <view class="sub">点选某一天查看明细</view>
         </view>
         <view class="chip" wx:if="{{feed.has}}">日均 {{feed.avg}} ml</view>
       </view>
       <block wx:if="{{feed.has}}">
-        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="chart-box">
+          <canvas type="2d" id="chCv" class="chart"></canvas>
+          <view class="chart-hits">
+            <view class="chart-hit" wx:for="{{chartRows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-hit" hover-stay-time="80" aria-role="button" aria-label="查看{{item.d}}" bindtap="onDayTap"></view>
+          </view>
+        </view>
         <view class="kpis">
           <view class="kpi" wx:for="{{feed.kpis}}" wx:key="k">
             <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
@@ -38,7 +42,7 @@
           </view>
         </view>
         <view class="dlist">
-          <view class="drow" wx:for="{{feed.rows}}" wx:key="d">
+          <view class="drow {{dayKey === item.key ? 'on' : ''}}" wx:for="{{feed.rows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayTap">
             <text class="dd">{{item.d}}</text>
             <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--feed)"></view></view>
             <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
@@ -56,12 +60,17 @@
       <view class="ch-h">
         <view>
           <view class="h3">每日尿布次数</view>
-          <view class="sub">尿 / 便合计</view>
+          <view class="sub">点选某一天查看明细</view>
         </view>
         <view class="chip" wx:if="{{diaper.has}}">日均 {{diaper.avg}} 次</view>
       </view>
       <block wx:if="{{diaper.has}}">
-        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="chart-box">
+          <canvas type="2d" id="chCv" class="chart"></canvas>
+          <view class="chart-hits">
+            <view class="chart-hit" wx:for="{{chartRows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-hit" hover-stay-time="80" aria-role="button" aria-label="查看{{item.d}}" bindtap="onDayTap"></view>
+          </view>
+        </view>
         <view class="kpis">
           <view class="kpi" wx:for="{{diaper.kpis}}" wx:key="k">
             <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
@@ -69,7 +78,7 @@
           </view>
         </view>
         <view class="dlist">
-          <view class="drow" wx:for="{{diaper.rows}}" wx:key="d">
+          <view class="drow {{dayKey === item.key ? 'on' : ''}}" wx:for="{{diaper.rows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayTap">
             <text class="dd">{{item.d}}</text>
             <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--diaper)"></view></view>
             <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
@@ -87,12 +96,17 @@
       <view class="ch-h">
         <view>
           <view class="h3">每日睡眠时长</view>
-          <view class="sub">单位：小时</view>
+          <view class="sub">点选某一天查看明细</view>
         </view>
         <view class="chip" wx:if="{{sleep.has}}">日均 {{sleep.avg}} h</view>
       </view>
       <block wx:if="{{sleep.has}}">
-        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="chart-box">
+          <canvas type="2d" id="chCv" class="chart"></canvas>
+          <view class="chart-hits">
+            <view class="chart-hit" wx:for="{{chartRows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-hit" hover-stay-time="80" aria-role="button" aria-label="查看{{item.d}}" bindtap="onDayTap"></view>
+          </view>
+        </view>
         <view class="kpis">
           <view class="kpi" wx:for="{{sleep.kpis}}" wx:key="k">
             <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
@@ -100,7 +114,7 @@
           </view>
         </view>
         <view class="dlist">
-          <view class="drow" wx:for="{{sleep.rows}}" wx:key="d">
+          <view class="drow {{dayKey === item.key ? 'on' : ''}}" wx:for="{{sleep.rows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayTap">
             <text class="dd">{{item.d}}</text>
             <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--sleep)"></view></view>
             <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
@@ -118,12 +132,17 @@
       <view class="ch-h">
         <view>
           <view class="h3">体重成长曲线</view>
-          <view class="sub">单位：kg</view>
+          <view class="sub">点选一次测量查看明细</view>
         </view>
         <view class="chip" wx:if="{{growth.has}}">{{growth.chip}}</view>
       </view>
       <block wx:if="{{growth.has}}">
-        <canvas type="2d" id="chCv" class="chart"></canvas>
+        <view class="chart-box">
+          <canvas type="2d" id="chCv" class="chart"></canvas>
+          <view class="chart-hits">
+            <view class="chart-hit" wx:for="{{chartRows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-hit" hover-stay-time="80" aria-role="button" aria-label="查看{{item.d}}" bindtap="onDayTap"></view>
+          </view>
+        </view>
         <view class="kpis">
           <view class="kpi" wx:for="{{growth.kpis}}" wx:key="k">
             <view class="kv">{{item.v}}<small>{{item.u}}</small></view>
@@ -131,7 +150,7 @@
           </view>
         </view>
         <view class="dlist">
-          <view class="drow" wx:for="{{growth.rows}}" wx:key="d">
+          <view class="drow {{dayKey === item.key ? 'on' : ''}}" wx:for="{{growth.rows}}" wx:key="key" data-key="{{item.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayTap">
             <text class="dd">{{item.d}}</text>
             <view class="dbar"><view class="di" style="width:{{item.p}}%;background:var(--growth)"></view></view>
             <view class="dv">{{item.v}}<small>{{item.u}}</small></view>
@@ -141,6 +160,40 @@
       <view wx:else class="empty">
         <view class="et1">暂无成长数据</view>
         <view class="et2">在「宝宝资料」填写出生体重，并记录测量值</view>
+      </view>
+    </view>
+
+    <view class="chartcard daycard anim" wx:if="{{dayOn}}">
+      <view class="ch-h">
+        <view>
+          <view class="h3">{{dayTitle}}</view>
+          <view class="sub">{{dayRows.length ? '左滑删除，点按修改' : '这一天没有对应记录'}}</view>
+        </view>
+      </view>
+      <view class="card card-clip" wx:if="{{dayRows.length}}" style="margin:12px 0 0;box-shadow:none">
+        <swipe-row
+          wx:for="{{dayRows}}"
+          wx:key="id"
+          line="{{index > 0}}"
+          disabled="{{!item.id || item.id === 'birth'}}"
+          open="{{openId === item.id}}"
+          data-id="{{item.id}}"
+          bind:drag="onSwipeDrag"
+          bind:open="onSwipeOpen"
+          bind:close="onSwipeClose"
+          bind:delete="onSwipeDelete"
+        >
+          <view class="row" data-id="{{item.id}}" hover-class="hv-row" hover-stay-time="60" bindtap="onDayRow">
+            <view class="ric" style="background:var(--{{item.icBg}})">
+              <image class="ric-ic" src="{{ic[item.iconKey]}}" mode="aspectFit" />
+            </view>
+            <view class="rbody">
+              <view class="rt">{{item.title}}</view>
+              <view class="rd">{{item.detail}}</view>
+            </view>
+            <view class="rr">{{item.hm}}</view>
+          </view>
+        </swipe-row>
       </view>
     </view>
 

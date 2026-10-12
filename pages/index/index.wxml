@@ -1,14 +1,18 @@
 <view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
 
-  <!-- Hero：渐变头图 + 日龄 chip + 快速记一笔 -->
-  <view class="hero" style="padding-top:{{navBottom}}px">
-    <view class="hero-top">
-      <view class="daychip">
-        <image class="daychip-ic" src="{{ic.sun}}" mode="aspectFit" />
-        <text>{{dayChip}}</text>
-      </view>
-      <view class="hero-add" hover-class="hv-add" hover-stay-time="80" bindtap="goAdd">
-        <image class="hero-add-ic" src="{{ic.plus}}" mode="aspectFit" />
+  <!-- Hero：渐变头图 + 日龄 chip -->
+  <view class="hero">
+    <view class="hero-nav" style="padding-top:{{sbH}}px;height:{{navBottom}}px;padding-right:{{capsuleRight}}px">
+      <view class="hero-top">
+        <view class="daychip">
+          <image class="daychip-ic" src="{{ic.sun}}" mode="aspectFit" />
+          <text>{{dayChip}}</text>
+        </view>
+        <view class="hero-theme" hover-class="hv-theme" hover-stay-time="80" bindtap="toggleDark" aria-role="switch" aria-checked="{{dark}}" aria-label="深色模式">
+          <view class="hero-theme-dot">
+            <image class="hero-theme-ic" src="{{dark ? ic.sunBtn : ic.moonBtn}}" mode="aspectFit" />
+          </view>
+        </view>
       </view>
     </view>
     <view class="hero-baby">
@@ -24,28 +28,28 @@
 
   <!-- 浮出数据卡（今日 2×2） -->
   <view class="today anim">
-    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" bindtap="goHistory">
+    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
       <view class="tci" style="background:var(--feedS)">
         <image class="tci-ic" src="{{ic.feed}}" mode="aspectFit" />
       </view>
       <view class="tcv">{{today.feedCount}}<small>次</small></view>
       <view class="tcl">喂养次数</view>
     </view>
-    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" bindtap="goHistory">
+    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
       <view class="tci" style="background:var(--feedS)">
         <image class="tci-ic" src="{{ic.bottle}}" mode="aspectFit" />
       </view>
       <view class="tcv">{{today.feedMl}}<small>ml</small></view>
       <view class="tcl">总奶量</view>
     </view>
-    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" bindtap="goHistory">
+    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" data-type="diaper" bindtap="goHistory">
       <view class="tci" style="background:var(--diaperS)">
         <image class="tci-ic" src="{{ic.diaper}}" mode="aspectFit" />
       </view>
       <view class="tcv">{{today.diaper}}<small>次</small></view>
       <view class="tcl">尿布</view>
     </view>
-    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" bindtap="goHistory">
+    <view class="tcell" hover-class="hv-cell" hover-stay-time="80" data-type="sleep" bindtap="goHistory">
       <view class="tci" style="background:var(--sleepS)">
         <image class="tci-ic" src="{{ic.sleep}}" mode="aspectFit" />
       </view>
@@ -55,11 +59,11 @@
   </view>
 
   <!-- 下次喂养渐变焦点卡 + 环形进度 -->
-  <view class="next anim" bindtap="onNextTap">
+  <view class="next anim" hover-class="hv-next" hover-stay-time="80" bindtap="onNextTap">
     <view class="next-l">
       <view class="next-t">距上次喂养</view>
       <block wx:if="{{hasFeed}}">
-        <view class="next-big">{{next.since}}<small>分钟</small></view>
+        <view class="next-big">{{next.hh}}<small>时</small>{{next.mm}}<small>分</small></view>
         <view class="next-s">{{next.sub}}</view>
       </block>
       <block wx:else>
@@ -76,33 +80,65 @@
     </view>
   </view>
 
+  <view class="sec sec-row sec-tap anim" wx:if="{{todoPreview.length}}" hover-class="hv-sec" hover-stay-time="80" bindtap="goTodo">
+    即将到来<text class="secv">{{todoMore ? '还有 ' + todoMore + ' 件' : '全部'}}</text>
+  </view>
+  <view class="card card-clip anim" wx:if="{{todoPreview.length}}">
+    <view
+      class="row"
+      wx:for="{{todoPreview}}"
+      wx:key="id"
+      hover-class="hv-row"
+      hover-stay-time="60"
+      bindtap="goTodo"
+    >
+      <view class="ric" style="background:var(--{{item.icBg}})">
+        <image class="ric-ic" src="{{ic[item.iconKey]}}" mode="aspectFit" />
+      </view>
+      <view class="rbody">
+        <view class="rt">{{item.title}}</view>
+        <view class="rd">待办</view>
+      </view>
+      <view class="rr {{item.late ? 'danger' : ''}}">{{item.when}}</view>
+    </view>
+  </view>
+  <view class="sec sec-row sec-tap anim" wx:else hover-class="hv-sec" hover-stay-time="80" bindtap="goTodo">
+    待办<text class="secv">疫苗、体检</text>
+  </view>
+
   <!-- 最近记录 -->
   <view class="sec anim">最近记录</view>
-  <view class="card anim">
+  <view class="card card-clip anim">
     <block wx:if="{{!empty}}">
-      <view
-        class="row"
+      <swipe-row
         wx:for="{{rows}}"
+        wx:for-item="r"
         wx:key="key"
-        hover-class="hv-row"
-        hover-stay-time="60"
-        bindtap="goHistory"
+        line="{{index > 0}}"
+        open="{{openId === r.key}}"
+        data-id="{{r.key}}"
+        bind:drag="onSwipeDrag"
+        bind:open="onSwipeOpen"
+        bind:close="onSwipeClose"
+        bind:delete="onSwipeDelete"
       >
-        <view class="ric" style="background:var(--{{r.icBg}})">
-          <image class="ric-ic" src="{{ic[r.iconKey]}}" mode="aspectFit" />
+        <view class="row" data-id="{{r.key}}" hover-class="hv-row" hover-stay-time="60" bindtap="onRecentTap">
+          <view class="ric" style="background:var(--{{r.icBg}})">
+            <image class="ric-ic" src="{{ic[r.iconKey]}}" mode="aspectFit" />
+          </view>
+          <view class="rbody">
+            <view class="rt">{{r.title}}</view>
+            <view class="rd">{{r.detail}}</view>
+          </view>
+          <view class="rr">{{r.hm}}</view>
         </view>
-        <view class="rbody">
-          <view class="rt">{{r.title}}</view>
-          <view class="rd">{{r.detail}}</view>
-        </view>
-        <view class="rr">{{r.hm}}</view>
-      </view>
+      </swipe-row>
     </block>
     <block wx:else>
       <view class="empty">
         <image class="eic" src="{{ic.empty}}" mode="aspectFit" />
         <view class="et1">还没有记录</view>
-        <view class="et2">点右上角 + 记下第一次喂养吧</view>
+        <view class="et2">切到底部「记录」记下第一次喂养吧</view>
       </view>
     </block>
   </view>

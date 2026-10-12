@@ -1,3 +1,5 @@
 {
-  "usingComponents": {}
+  "usingComponents": {
+    "swipe-row": "/components/swipe-row/index"
+  }
 }

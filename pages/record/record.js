@@ -8,8 +8,18 @@ var SEGS = [
   { k: 'feed', t: '喂养' },
   { k: 'diaper', t: '尿布' },
   { k: 'sleep', t: '睡眠' },
-  { k: 'growth', t: '成长' }
+  { k: 'growth', t: '成长' },
+  { k: 'med', t: '补充' }
 ];
+
+var MEDS = require('../../utils/recordRow.js').MEDS;
+var DOSE_PH = {
+  k1: '如 1 滴',
+  vd: '如 1 滴 或 400 IU',
+  ad: '如 1 滴',
+  iron: '如 0.5 ml',
+  other: '如 1 滴 / 1 ml'
+};
 
 Page({
   data: {
@@ -27,13 +37,13 @@ Page({
     timeStr: '',
     note: '',
     // —— 喂养 ——
-    feedMethod: 'breast',
-    side: 'right',
-    dur: 15,
-    amt: 0,
-    showSide: true,
-    showDur: true,
-    showAmt: true,
+      feedMethod: 'breast',
+      side: 'right',
+      dur: 15,
+      amt: 120,
+      showSide: false,
+      showDur: false,
+      showAmt: true,
     // 计时器
     timing: false,
     timerTxt: '00:00',
@@ -43,7 +53,14 @@ Page({
     sDate: '', sTime: '', eDate: '', eTime: '',
     sleepDurTxt: '--',
     // —— 成长 ——
-    weight: '', height: '', headCirc: ''
+    weight: '', height: '', headCirc: '',
+    // —— 补充剂 ——
+    meds: MEDS,
+    medKey: 'vd',
+    medName: '',
+    dose: '',
+    dosePh: DOSE_PH.vd,
+    fieldErr: ''
   },
 
   onLoad: function () {
@@ -67,23 +84,27 @@ Page({
     theme.syncWindow(g.theme, g.dark);
     try { wx.setNavigationBarColor({ frontColor: g.dark ? '#ffffff' : '#000000', backgroundColor: g.dark ? '#121418' : '#F4F6FC' }); } catch (e) { }
 
-    // Tab 页无法带参：从 globalData 消费「待新增类型 / 待编辑记录」
+    // Tab 页常驻：每次进入都是一笔新记录。从历史/统计点进来才载入编辑。
     var app = getApp();
     if (app.globalData.editingId) {
       this.loadForEdit(app.globalData.editingId);
       app.globalData.editingId = '';
-    } else if (app.globalData.pendingType) {
-      this.switchSegByKey(app.globalData.pendingType);
-      app.globalData.pendingType = '';
-    }
-
-    // 计时器跨页恢复（Tab 页常驻，仅校准显示）
-    if (this.data.timing && this._startTs) {
+    } else if (this.data.timing && this._startTs) {
       this.syncTimerNow();
+    } else {
+      var pending = app.globalData.pendingType;
+      this.initForm();
+      if (pending) {
+        this.switchSegByKey(pending);
+        app.globalData.pendingType = '';
+      }
     }
   },
 
-  onHide: function () { /* 页面常驻，计时器基于时间戳，无需处理 */ },
+  onHide: function () {
+    if (this.data.timing) { return; }
+    this.initForm();
+  },
 
   // 主题相关图标（返回箭头 / 日历 / 时钟）
   buildIcons: function () {
@@ -97,6 +118,7 @@ Page({
 
   // 重置为「新增 · 当前时间」默认值
   initForm: function (keepSeg) {
+    this._editId = '';
     this.setData({
       seg: keepSeg ? this.data.seg : 'feed',
       segIndex: keepSeg ? this.data.segIndex : 0,
@@ -108,13 +130,15 @@ Page({
       feedMethod: 'breast',
       side: 'right',
       dur: 15,
-      amt: 0,
-      showSide: true, showDur: true, showAmt: true,
+      amt: 120,
+      showSide: false, showDur: false, showAmt: true,
       diaperType: 'poop',
       sDate: T.nowYMD(), sTime: T.nowHM(),
       eDate: T.nowYMD(), eTime: T.nowHM(),
       sleepDurTxt: '0 分',
-      weight: '', height: '', headCirc: ''
+      weight: '', height: '', headCirc: '',
+      medKey: 'vd', medName: '', dose: '', dosePh: DOSE_PH.vd,
+      fieldErr: ''
     });
     this.stopTimer(true);
   },
@@ -137,8 +161,8 @@ Page({
       patch.side = r.side || 'right';
       patch.dur = r.duration || 0;
       patch.amt = r.amount || 0;
-      patch.showSide = r.feedMethod === 'breast' || r.feedMethod === 'mixed';
-      patch.showDur = r.feedMethod === 'breast' || r.feedMethod === 'mixed';
+      patch.showSide = r.feedMethod === 'mixed';
+      patch.showDur = r.feedMethod === 'mixed';
       patch.showAmt = true;
     } else if (r.type === 'diaper') {
       patch.diaperType = r.diaperType || 'poop';
@@ -152,6 +176,11 @@ Page({
       patch.weight = r.weight > 0 ? String(r.weight) : '';
       patch.height = r.height > 0 ? String(r.height) : '';
       patch.headCirc = r.headCirc > 0 ? String(r.headCirc) : '';
+    } else if (r.type === 'med') {
+      patch.medKey = r.medKey || 'vd';
+      patch.medName = r.medName || '';
+      patch.dose = r.dose || '';
+      patch.dosePh = DOSE_PH[patch.medKey] || DOSE_PH.other;
     }
     this.setData(patch);
     this._editId = id;
@@ -167,21 +196,20 @@ Page({
     var k = e.currentTarget.dataset.k;
     var i = e.currentTarget.dataset.i;
     if (k === this.data.seg) { return; }
-    this.setData({ seg: k, segIndex: i });
+    this.setData({ seg: k, segIndex: i, fieldErr: '' });
   },
 
   /* ---------- 行内分段 ---------- */
   onFeedMethod: function (e) {
     var v = e.currentTarget.dataset.v;
     if (v === this.data.feedMethod) { return; }
-    // 母乳：奶量可选（吸出瓶喂场景），默认清 0；奶粉/混合：奶量必填，0 时给常用值
+    // 母乳是解冻后按量瓶喂，和奶粉一样记毫升；只有混合才保留亲喂侧与时长
     var amt = this.data.amt;
-    if (v === 'breast') { amt = 0; }
-    else if (!(amt > 0)) { amt = 120; }
+    if (!(amt > 0)) { amt = 120; }
     this.setData({
       feedMethod: v,
-      showSide: v === 'breast' || v === 'mixed',
-      showDur: v === 'breast' || v === 'mixed',
+      showSide: v === 'mixed',
+      showDur: v === 'mixed',
       showAmt: true,
       amt: amt
     });
@@ -208,7 +236,7 @@ Page({
     this.setData({ dur: this.stepBy(this.data.dur, e.currentTarget.dataset.op, 240) });
   },
   stepAmt: function (e) {
-    this.setData({ amt: this.stepBy(this.data.amt, e.currentTarget.dataset.op, 600) });
+    this.setData({ amt: this.stepBy(this.data.amt, e.currentTarget.dataset.op, 600), fieldErr: '' });
   },
   onDurInput: function (e) {
     var raw = e.detail.value;
@@ -220,8 +248,8 @@ Page({
   },
   onAmtInput: function (e) {
     var raw = e.detail.value;
-    if (raw === '') { this.setData({ amt: '' }); return; }
-    this.setData({ amt: this.clampInt(raw, 600) });
+    if (raw === '') { this.setData({ amt: '', fieldErr: '' }); return; }
+    this.setData({ amt: this.clampInt(raw, 600), fieldErr: '' });
   },
   onAmtBlur: function () {
     this.setData({ amt: this.clampInt(this.data.amt, 600) });
@@ -257,10 +285,10 @@ Page({
   /* ---------- picker ---------- */
   onDateChange: function (e) { this.setData({ dateStr: e.detail.value }); },
   onTimeChange: function (e) { this.setData({ timeStr: e.detail.value }); },
-  onSDate: function (e) { this.setData({ sDate: e.detail.value }); this.calcSleep(); },
-  onSTime: function (e) { this.setData({ sTime: e.detail.value }); this.calcSleep(); },
-  onEDate: function (e) { this.setData({ eDate: e.detail.value }); this.calcSleep(); },
-  onETime: function (e) { this.setData({ eTime: e.detail.value }); this.calcSleep(); },
+  onSDate: function (e) { this.setData({ sDate: e.detail.value, fieldErr: '' }); this.calcSleep(); },
+  onSTime: function (e) { this.setData({ sTime: e.detail.value, fieldErr: '' }); this.calcSleep(); },
+  onEDate: function (e) { this.setData({ eDate: e.detail.value, fieldErr: '' }); this.calcSleep(); },
+  onETime: function (e) { this.setData({ eTime: e.detail.value, fieldErr: '' }); this.calcSleep(); },
   calcSleep: function () {
     var s = T.tsOf(this.data.sDate, this.data.sTime);
     var e = T.tsOf(this.data.eDate, this.data.eTime);
@@ -270,9 +298,15 @@ Page({
 
   /* ---------- 文本输入 ---------- */
   onNote: function (e) { this.setData({ note: e.detail.value }); },
-  onWeight: function (e) { this.setData({ weight: e.detail.value }); },
-  onHeight: function (e) { this.setData({ height: e.detail.value }); },
-  onHead: function (e) { this.setData({ headCirc: e.detail.value }); },
+  onWeight: function (e) { this.setData({ weight: e.detail.value, fieldErr: '' }); },
+  onHeight: function (e) { this.setData({ height: e.detail.value, fieldErr: '' }); },
+  onHead: function (e) { this.setData({ headCirc: e.detail.value, fieldErr: '' }); },
+  onMed: function (e) {
+    var k = e.currentTarget.dataset.v;
+    this.setData({ medKey: k, dosePh: DOSE_PH[k] || DOSE_PH.other });
+  },
+  onMedName: function (e) { this.setData({ medName: e.detail.value, fieldErr: '' }); },
+  onDose: function (e) { this.setData({ dose: e.detail.value, fieldErr: '' }); },
 
   /* ---------- 保存 / 删除 ---------- */
   onSave: function () {
@@ -284,21 +318,21 @@ Page({
       rec = { type: 'feed', time: ts, feedMethod: d.feedMethod, note: d.note };
       var durN = this.clampInt(d.dur, 240);
       var amtN = this.clampInt(d.amt, 600);
-      if (d.feedMethod !== 'formula') {
+      if (d.feedMethod === 'mixed') {
         rec.side = d.side;
         rec.duration = durN;
       }
-      if (d.feedMethod === 'formula' && !(amtN > 0)) {
-        wx.showToast({ title: '请输入奶量', icon: 'none' }); return;
+      if (!(amtN > 0)) {
+        this.setData({ fieldErr: 'amt' }); return;
       }
-      if (amtN > 0) { rec.amount = amtN; } // 母乳可选（吸出瓶喂），奶粉/混合必填
+      rec.amount = amtN;
     } else if (d.seg === 'diaper') {
       rec = { type: 'diaper', time: T.tsOf(d.dateStr, d.timeStr), diaperType: d.diaperType, note: d.note };
     } else if (d.seg === 'sleep') {
       var s = T.tsOf(d.sDate, d.sTime);
       var e2 = T.tsOf(d.eDate, d.eTime);
       if (e2 <= s) {
-        wx.showToast({ title: '结束时间需晚于开始', icon: 'none' }); return;
+        this.setData({ fieldErr: 'sleep' }); return;
       }
       rec = { type: 'sleep', time: s, start: s, end: e2, duration: Math.round((e2 - s) / 60000), note: d.note };
     } else if (d.seg === 'growth') {
@@ -306,12 +340,29 @@ Page({
       var h = parseFloat(d.height);
       var hc = parseFloat(d.headCirc);
       if (!(w > 0) && !(h > 0) && !(hc > 0)) {
-        wx.showToast({ title: '至少填写一项测量值', icon: 'none' }); return;
+        this.setData({ fieldErr: 'growth' }); return;
       }
       rec = { type: 'growth', time: T.tsOf(d.dateStr, '12:00'), note: d.note };
       if (w > 0) { rec.weight = Math.round(w * 100) / 100; }
       if (h > 0) { rec.height = Math.round(h * 10) / 10; }
       if (hc > 0) { rec.headCirc = Math.round(hc * 10) / 10; }
+    } else if (d.seg === 'med') {
+      var name = (d.medName || '').trim();
+      var dose = (d.dose || '').trim();
+      if (d.medKey === 'other' && !name) {
+        this.setData({ fieldErr: 'medName' }); return;
+      }
+      if (!dose) {
+        this.setData({ fieldErr: 'dose' }); return;
+      }
+      rec = {
+        type: 'med',
+        time: T.tsOf(d.dateStr, d.timeStr),
+        medKey: d.medKey,
+        medName: d.medKey === 'other' ? name : '',
+        dose: dose,
+        note: d.note
+      };
     }
 
     if (!rec) { return; }
@@ -321,7 +372,7 @@ Page({
     } else {
       storage.addRecord(rec);
     }
-    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长' }[d.seg];
+    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充剂' }[d.seg];
     var toast = this.selectComponent('#toast');
     if (toast) { toast.show('已保存' + segName + '记录'); }
     var that = this;
@@ -354,6 +405,7 @@ Page({
   },
 
   onBack: function () {
+    this.initForm();
     wx.switchTab({ url: '/pages/index/index' });
   }
 });

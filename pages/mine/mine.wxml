@@ -1,20 +1,17 @@
 <view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
 
-  <!-- 空导航条（滚动时浮现毛玻璃 + 发丝线） -->
-  <view class="nav nav-blank {{navSc ? 'sc' : ''}}"></view>
+  <!-- 未滚动时透明，头图从状态栏铺下来；滚动后浮现毛玻璃 -->
+  <view class="nav nav-blank {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px;height:{{navBottom}}px"></view>
 
-  <view class="page-body" style="padding-top:{{navBottom + 6}}px">
-
-    <!-- ============ 资料头卡（整卡可点） ============ -->
-    <view class="profile anim">
-      <view class="profile-hd" hover-class="hv-prof" hover-stay-time="60" bindtap="goBaby">
+  <view class="profile" style="padding-top:{{sbH}}px">
+    <view class="profile-hd" style="min-height:{{navH}}px;padding-right:{{capsuleRight}}px" hover-class="hv-prof" hover-stay-time="60" bindtap="goBaby">
         <view class="pava">
           <image class="pava-ic" src="{{ic.baby}}" mode="aspectFill" />
           <view class="pen">
             <image class="pen-ic" src="{{ic.pen}}" mode="aspectFit" />
           </view>
         </view>
-        <view>
+        <view class="profile-txt">
           <view class="pnm">{{profile.name}}</view>
           <view class="pmt">{{profile.meta}}</view>
         </view>
@@ -27,10 +24,11 @@
       </view>
     </view>
 
+  <view class="page-body">
     <!-- ============ 提醒 ============ -->
     <view class="sec anim">提醒</view>
     <view class="card anim">
-      <view class="row">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="toggleReminder" aria-role="switch" aria-checked="{{reminderEnabled}}" aria-label="间隔提醒">
         <view class="ric" style="background:var(--priSoft)">
           <image class="ric-ic" src="{{ic.bell}}" mode="aspectFit" />
         </view>
@@ -38,7 +36,7 @@
           <view class="rt">间隔提醒</view>
           <view class="rd">超过建议间隔时全屏提醒</view>
         </view>
-        <view class="switch {{reminderEnabled ? 'on' : ''}}" hover-class="sw-press" hover-stay-time="80" bindtap="toggleReminder">
+        <view class="switch {{reminderEnabled ? 'on' : ''}}">
           <view class="knob"></view>
         </view>
       </view>
@@ -51,6 +49,16 @@
           <view class="rd">新生儿 2-3 小时一次</view>
         </view>
         <view class="rr">{{intervalTxt}} <text class="chev">›</text></view>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goTodo">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.todo}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">待办</view>
+          <view class="rd">疫苗、体检和其它安排</view>
+        </view>
+        <view class="rr">{{todoOpen ? todoOpen + ' 件' : ''}} <text class="chev">›</text></view>
       </view>
     </view>
 
@@ -70,7 +78,7 @@
           <view class="tick"><image class="tick-ic" src="{{ic.check}}" mode="aspectFit" /></view>
         </view>
       </view>
-      <view class="row row-sep">
+      <view class="row row-sep" hover-class="hv-row" hover-stay-time="60" bindtap="toggleDark" aria-role="switch" aria-checked="{{dark}}" aria-label="深色模式">
         <view class="ric" style="background:var(--priSoft)">
           <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
         </view>
@@ -78,7 +86,7 @@
           <view class="rt">深色模式</view>
           <view class="rd">夜间柔光，呵护眼睛</view>
         </view>
-        <view class="switch {{dark ? 'on' : ''}}" hover-class="sw-press" hover-stay-time="80" bindtap="toggleDark">
+        <view class="switch {{dark ? 'on' : ''}}">
           <view class="knob"></view>
         </view>
       </view>
@@ -112,7 +120,7 @@
     <!-- ============ 危险区（独立成卡，物理隔离） ============ -->
     <view class="card card-danger anim">
       <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doClear">
-        <view class="ric" style="background:#FDE9E9">
+        <view class="ric ric-danger">
           <image class="ric-ic" src="{{ic.trash}}" mode="aspectFit" />
         </view>
         <view class="rbody">

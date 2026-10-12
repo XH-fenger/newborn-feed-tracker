@@ -1,0 +1,17 @@
+<wxs module="swipe" src="./index.wxs"></wxs>
+<view
+  class="sw"
+  prop="{{open}}"
+  change:prop="{{swipe.sync}}"
+  data-off="{{disabled}}"
+  capture-bind:touchstart="{{swipe.start}}"
+  capture-bind:touchmove="{{swipe.move}}"
+  capture-bind:touchend="{{swipe.end}}"
+  capture-bind:touchcancel="{{swipe.end}}"
+>
+  <view class="sw-line" wx:if="{{line}}"></view>
+  <view class="sw-del" catchtap="onDel" aria-role="button" aria-label="删除">删除</view>
+  <view class="sw-main">
+    <slot></slot>
+  </view>
+</view>

@@ -6,7 +6,6 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>返回</text>
       </view>
-      <view class="nav-t">宝宝资料</view>
     </view>
   </view>
 

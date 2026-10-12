@@ -1,0 +1,77 @@
+var DEL = 76;
+
+function point(e) {
+  if (e.touches && e.touches.length) { return e.touches[0]; }
+  if (e.changedTouches && e.changedTouches.length) { return e.changedTouches[0]; }
+  return null;
+}
+
+function apply(ins, x, anim) {
+  var st = ins.getState();
+  st.x = x;
+  var node = ins.selectComponent('.sw-main');
+  if (!node) { return; }
+  node.setStyle({
+    transform: 'translate3d(' + x + 'px,0,0)',
+    '-webkit-transform': 'translate3d(' + x + 'px,0,0)',
+    transition: anim ? 'transform .22s cubic-bezier(.22,1,.36,1)' : 'none',
+    '-webkit-transition': anim ? '-webkit-transform .22s cubic-bezier(.22,1,.36,1)' : 'none'
+  });
+}
+
+function sync(newVal, oldVal, ins) {
+  if (ins.getState().lock === 'h') { return; }
+  apply(ins, newVal ? -DEL : 0, true);
+}
+
+function start(e, ins) {
+  var ds = e.currentTarget.dataset || {};
+  if (ds.off === true || ds.off === 'true') { return; }
+  var t = point(e);
+  if (!t) { return; }
+  var st = ins.getState();
+  st.sx = t.clientX;
+  st.sy = t.clientY;
+  st.lock = '';
+  st.base = st.x || 0;
+}
+
+function move(e, ins) {
+  var ds = e.currentTarget.dataset || {};
+  if (ds.off === true || ds.off === 'true') { return; }
+  var t = point(e);
+  if (!t) { return; }
+  var st = ins.getState();
+  var dx = t.clientX - st.sx;
+  var dy = t.clientY - st.sy;
+  if (!st.lock) {
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { return; }
+    st.lock = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    if (st.lock === 'h') { ins.callMethod('onDrag'); }
+  }
+  if (st.lock !== 'h') { return; }
+  var x = (st.base || 0) + dx;
+  if (x > 0) { x = 0; }
+  if (x < -DEL) { x = -DEL; }
+  apply(ins, x, false);
+  return false;
+}
+
+function end(e, ins) {
+  var st = ins.getState();
+  if (st.lock !== 'h') {
+    st.lock = '';
+    return;
+  }
+  var open = (st.x || 0) < -DEL / 2;
+  st.lock = '';
+  apply(ins, open ? -DEL : 0, true);
+  ins.callMethod(open ? 'onOpened' : 'onClosed');
+}
+
+module.exports = {
+  sync: sync,
+  start: start,
+  move: move,
+  end: end
+};

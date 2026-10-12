@@ -22,7 +22,7 @@
   --diaper: #BE7210; --diaperS: #FDF1DE;
   --sleep: #6A57EE;  --sleepS: #EEEBFE;
   --growth: #2C6FE0; --growthS: #E8F0FE;
-  --danger: #D93A3F;
+  --danger: #D93A3F; --dangerS: #FDE9E9;
 }
 
 /* —— 主题 A：晨雾青 —— */
@@ -70,12 +70,13 @@
   --line2: rgba(255, 255, 255, .15);
   --sh1: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 16px rgba(0, 0, 0, .36);
   --sh2: 0 16px 40px rgba(0, 0, 0, .62);
-  /* 语义浅底：暗黑下统一中性灰（贴近 iOS 暗色图标块） */
-  --priSoft: rgba(255, 255, 255, .07);
-  --feedS: rgba(255, 255, 255, .07);
-  --diaperS: rgba(255, 255, 255, .07);
-  --sleepS: rgba(255, 255, 255, .07);
-  --growthS: rgba(255, 255, 255, .07);
+  /* 语义浅底：暗色下保留色相，避免四类图标底变成同一块灰 */
+  --priSoft: rgba(63, 211, 193, .18);
+  --feedS: rgba(63, 214, 198, .18);
+  --diaperS: rgba(242, 178, 74, .18);
+  --sleepS: rgba(169, 155, 255, .20);
+  --growthS: rgba(111, 176, 255, .20);
+  --dangerS: rgba(255, 107, 111, .20);
   /* 语义/主色提亮，保证暗底可读 */
   --pri: #3FD3C1; --pri2: #5FE0D2; --priInk: #7FE9DC;
   --feed: #3FD6C6; --diaper: #F2B24A; --sleep: #A99BFF; --growth: #6FB0FF; --danger: #FF6B6F;

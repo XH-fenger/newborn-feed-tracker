@@ -5,7 +5,9 @@ var T = require('./time.js');
 /* ---------- 导出 ---------- */
 function exportData() {
   var d = storage.db();
-  var json = JSON.stringify({ baby: d.baby, records: d.records, settings: d.settings }, null, 2);
+  var json = JSON.stringify({
+    baby: d.baby, records: d.records, todos: d.todos || [], settings: d.settings
+  }, null, 2);
   var fname = 'newborn-feed-backup-' + T.fmtYMD(Date.now()).replace(/-/g, '') + '.json';
   var fs = wx.getFileSystemManager();
   var path = wx.env.USER_DATA_PATH + '/' + fname;
@@ -55,6 +57,13 @@ function validateDb(obj) {
   for (var i = 0; i < obj.records.length; i++) {
     var r = obj.records[i];
     if (!r || typeof r !== 'object' || !r.type || !r.time) { return false; }
+  }
+  if (obj.todos != null) {
+    if (!Array.isArray(obj.todos)) { return false; }
+    for (var j = 0; j < obj.todos.length; j++) {
+      var t = obj.todos[j];
+      if (!t || typeof t.title !== 'string' || typeof t.due !== 'number') { return false; }
+    }
   }
   return true;
 }

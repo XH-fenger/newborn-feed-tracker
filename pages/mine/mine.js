@@ -20,12 +20,16 @@ Page({
     theme: 'indigo',
     dark: false,
     sbH: 44,
+    navH: 44,
+    navBottom: 88,
+    capsuleRight: 96,
     ic: {},
     themes: THEME_LIST,
     profile: { name: '宝宝', meta: '', count: 0, days: 0, daily: 0 },
     reminderEnabled: true,
     intervalH: 3,
-    intervalTxt: '3 小时'
+    intervalTxt: '3 小时',
+    todoOpen: 0
   },
 
   onLoad: function () {
@@ -44,14 +48,26 @@ Page({
       if (tb) { tb.sync(g.theme, g.dark); tb.setSelected(3); }
     }
     theme.syncWindow(g.theme, g.dark);
-    try { wx.setNavigationBarColor({ frontColor: g.dark ? '#ffffff' : '#000000', backgroundColor: g.dark ? '#121418' : '#F4F6FC' }); } catch (e) { }
-
+    this.paintBar(!!this.data.navSc);
     this.refresh();
+  },
+
+  paintBar: function (scrolled) {
+    var light = scrolled && !this.data.dark;
+    try {
+      wx.setNavigationBarColor({
+        frontColor: light ? '#000000' : '#ffffff',
+        backgroundColor: light ? '#F4F6FC' : '#121418'
+      });
+    } catch (e) { }
   },
 
   onPageScroll: function (e) {
     var sc = e.scrollTop > 6;
-    if (sc !== this.data.navSc) { this.setData({ navSc: sc }); }
+    if (sc !== this.data.navSc) {
+      this.setData({ navSc: sc });
+      this.paintBar(sc);
+    }
   },
 
   buildIcons: function () {
@@ -62,6 +78,7 @@ Page({
         pen: icons.svg('pen', c.pri, 12, 2.5),
         bell: icons.svg('bell', c.pri, 19, 2),
         clock: icons.svg('clock', c.diaper, 19, 2),
+        todo: icons.svg('calendar', c.pri, 19, 2),
         sleep: icons.svg('sleep', c.sleep, 19, 2),
         moon: icons.svg('moon', c.pri, 19, 2),
         down: icons.svg('down', c.growth, 19, 2),
@@ -84,7 +101,8 @@ Page({
       profile: { name: baby.name || '宝宝', meta: meta, count: ms.count, days: ms.days, daily: ms.daily },
       reminderEnabled: !!s.reminderEnabled,
       intervalH: Math.round(itv / 60),
-      intervalTxt: (Math.round(itv / 60 * 10) / 10) + ' 小时'
+      intervalTxt: (Math.round(itv / 60 * 10) / 10) + ' 小时',
+      todoOpen: storage.todos().filter(function (t) { return !t.done; }).length
     });
   },
 
@@ -114,6 +132,9 @@ Page({
       }
     });
   },
+  goTodo: function () {
+    wx.navigateTo({ url: '/pages/todo/todo' });
+  },
   /* ---------- 外观主题 ---------- */
   onThemePick: function (e) {
     var k = e.currentTarget.dataset.k;
@@ -138,7 +159,7 @@ Page({
     var that = this;
     wx.showModal({
       title: '清空全部记录？',
-      content: '共 ' + storage.records().length + ' 条记录将被删除，不可恢复。建议先导出备份。',
+      content: '共 ' + storage.records().length + ' 条喂养等记录将被删除，不可恢复。待办会保留。建议先导出备份。',
       confirmText: '清空',
       confirmColor: '#D93A3F',
       success: function (r) {

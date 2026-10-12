@@ -6,7 +6,6 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>首页</text>
       </view>
-      <view class="nav-t">{{editing ? '编辑记录' : '记一笔'}}</view>
       <view class="nav-meta">{{navMeta}}</view>
     </view>
   </view>
@@ -14,7 +13,7 @@
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
     <!-- 类型分段 -->
-    <view class="seg seg-4 anim">
+    <view class="seg seg-5 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -55,26 +54,27 @@
             </view>
           </view>
           <view class="stepper" style="margin-top:10px">
-            <view class="st {{dur <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepDur">−</view>
+            <view class="st {{dur <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepDur" aria-role="button" aria-label="减少时长">−</view>
             <view class="num">
               <input class="num-in" type="digit" value="{{dur}}" disabled="{{timing}}" bindinput="onDurInput" bindblur="onDurBlur" />
               <text class="unit">分</text>
             </view>
-            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepDur">+</view>
+            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepDur" aria-role="button" aria-label="增加时长">+</view>
           </view>
         </view>
 
         <view class="fld" wx:if="{{showAmt}}">
-          <view class="flabel">{{feedMethod === 'breast' ? '吸出奶量 (ml)' : '奶量 (ml)'}}</view>
-          <view class="fhint" wx:if="{{feedMethod === 'breast'}}">吸出瓶喂时填写，亲喂可不填</view>
+          <view class="flabel">奶量 (ml)</view>
+          <view class="fhint" wx:if="{{feedMethod === 'breast'}}">解冻母乳，按实际喂下的量填写</view>
           <view class="stepper">
-            <view class="st {{amt <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepAmt">−</view>
+            <view class="st {{amt <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepAmt" aria-role="button" aria-label="减少奶量">−</view>
             <view class="num">
               <input class="num-in" type="digit" value="{{amt}}" bindinput="onAmtInput" bindblur="onAmtBlur" />
               <text class="unit">ml</text>
             </view>
-            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepAmt">+</view>
+            <view class="st" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepAmt" aria-role="button" aria-label="增加奶量">+</view>
           </view>
+          <view class="ferr" wx:if="{{fieldErr === 'amt'}}">请输入奶量</view>
         </view>
       </view>
 
@@ -174,6 +174,7 @@
               </view>
             </picker>
           </view>
+          <view class="ferr" wx:if="{{fieldErr === 'sleep'}}">结束时间需晚于开始</view>
         </view>
         <view class="fld">
           <view class="flabel">睡眠时长</view>
@@ -200,6 +201,7 @@
         <view class="fld">
           <view class="flabel">头围 (cm)</view>
           <input class="tx" type="digit" value="{{headCirc}}" placeholder="如 36.5" placeholder-class="ph" bindinput="onHead" />
+          <view class="ferr" wx:if="{{fieldErr === 'growth'}}">至少填写一项测量值</view>
         </view>
         <view class="fld">
           <view class="flabel">记录日期</view>
@@ -209,6 +211,57 @@
               <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
             </view>
           </picker>
+        </view>
+      </view>
+    </block>
+
+    <!-- ============ 补充剂 ============ -->
+    <block wx:if="{{seg === 'med'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">药剂</view>
+          <view class="meds">
+            <view
+              wx:for="{{meds}}"
+              wx:key="k"
+              class="med {{medKey === item.k ? 'on' : ''}}"
+              hover-class="hv-si"
+              hover-stay-time="60"
+              data-v="{{item.k}}"
+              bindtap="onMed"
+            >{{item.t}}</view>
+          </view>
+        </view>
+        <view class="fld" wx:if="{{medKey === 'other'}}">
+          <view class="flabel">名称</view>
+          <input class="tx" value="{{medName}}" placeholder="如 益生菌" placeholder-class="ph" bindinput="onMedName" />
+          <view class="ferr" wx:if="{{fieldErr === 'medName'}}">请填写药剂名称</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">剂量</view>
+          <input class="tx" value="{{dose}}" placeholder="{{dosePh}}" placeholder-class="ph" bindinput="onDose" />
+          <view class="ferr" wx:if="{{fieldErr === 'dose'}}">请填写剂量</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">记录时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{dateStr}}" bindchange="onDateChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{dateStr}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{timeStr}}" bindchange="onTimeChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{timeStr}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选，如 随奶服" placeholder-class="ph" bindinput="onNote" />
         </view>
       </view>
     </block>

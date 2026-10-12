@@ -6,7 +6,8 @@
     "pages/mine/mine",
     "pages/history/history",
     "pages/baby/baby",
-    "pages/alarm/alarm"
+    "pages/alarm/alarm",
+    "pages/todo/todo"
   ],
   "window": {
     "navigationStyle": "custom",

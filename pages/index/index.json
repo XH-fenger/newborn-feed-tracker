@@ -1,5 +1,6 @@
 {
   "usingComponents": {
-    "toast": "/components/toast/toast"
+    "toast": "/components/toast/toast",
+    "swipe-row": "/components/swipe-row/index"
   }
 }

@@ -4,25 +4,30 @@ var stats = require('../../utils/stats.js');
 var theme = require('../../utils/theme.js');
 var icons = require('../../utils/icons.js');
 var T = require('../../utils/time.js');
+var schedule = require('../../utils/schedule.js');
+var motion = require('../../utils/motion.js');
 
-var METHOD_TXT = { breast: '母乳', formula: '奶粉', mixed: '混合' };
-var SIDE_TXT = { left: '左侧', right: '右侧', both: '双侧' };
-var DIAPER_TXT = { pee: '尿', poop: '便', both: '都有' };
+var rowsOf = require('../../utils/recordRow.js');
 
 Page({
   data: {
     theme: 'indigo',
     dark: false,
     sbH: 44,
+    navBottom: 88,
+    capsuleRight: 96,
     ic: {},
     baby: { name: '宝宝' },
     heroMeta: '',
     dayChip: '第 1 天',
     today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0h 0m' },
     hasFeed: false,
-    next: { since: 0, sub: '', nextHM: '--:--' },
+    next: { hh: '00', mm: '00', sub: '', nextHM: '--:--' },
     rows: [],
-    empty: true
+    empty: true,
+    openId: '',
+    todoPreview: [],
+    todoMore: 0
   },
 
   onLoad: function () {
@@ -48,6 +53,7 @@ Page({
     this.refresh();
     this.startTicker();
     this.checkAlarm();
+    this.checkTodoHint();
   },
 
   onHide: function () { this.stopTicker(); },
@@ -59,7 +65,8 @@ Page({
     return {
       ic: {
         sun: icons.svg('sun', '#FFFFFF', 13, 2.2),
-        plus: icons.svg('plus', '#FFFFFF', 19, 2.6),
+        sunBtn: icons.svg('sun', '#FFFFFF', 16, 2.2),
+        moonBtn: icons.svg('moon', '#FFFFFF', 16, 2.2),
         baby: storage.baby().gender === 'F' ? '/assets/avatar-girl.png' : '/assets/avatar-boy.png',
         feed: icons.svg('feed', c.feed, 17, 2),
         bottle: icons.svg('bottle', c.feed, 17, 2),
@@ -70,6 +77,8 @@ Page({
         diaper19: icons.svg('diaper', c.diaper, 19, 2),
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
+        med19: icons.svg('med', c.pri, 19, 2),
+        todo19: icons.svg('calendar', c.pri, 19, 2),
         empty: icons.svg('list', c.ink3, 44, 1.6)
       }
     };
@@ -100,8 +109,12 @@ Page({
       },
       hasFeed: !!lf,
       rows: this.buildRows(records.slice(0, 3)),
-      empty: records.length === 0
+      empty: records.length === 0,
+      openId: ''
     };
+    var todo = this.buildTodoPreview();
+    patch.todoPreview = todo.preview;
+    patch.todoMore = todo.more;
     this.setData(patch);
     this._interval = s.feedInterval;
     this._lastFeed = lf;
@@ -111,42 +124,52 @@ Page({
   // 最近记录行（iconKey + icBg → 渲染时查 data.ic / CSS 变量，主题切换自动生效）
   buildRows: function (list) {
     return list.map(function (r) {
-      var o = { key: r.id, hm: T.fmtHM(r.time), title: '', detail: '', iconKey: '', icBg: '' };
-      if (r.type === 'feed') {
-        var m = METHOD_TXT[r.feedMethod] || '喂养';
-        o.title = r.feedMethod === 'breast' ? m + ' · ' + (SIDE_TXT[r.side] || '') : m;
-        if (r.feedMethod === 'breast') {
-          o.detail = ((r.duration || 0) > 0 ? '时长 ' + r.duration + ' 分钟' : '未记时长') +
-            (r.amount > 0 ? ' · 瓶喂 ' + r.amount + ' ml' : '');
-        }
-        else { o.detail = '奶量 ' + (r.amount || 0) + ' ml'; }
-        o.iconKey = r.feedMethod === 'breast' ? 'feed19' : 'bottle19';
-        o.icBg = 'feedS';
-      } else if (r.type === 'diaper') {
-        o.title = '换尿布 · ' + (DIAPER_TXT[r.diaperType] || '');
-        o.detail = r.note || '状态正常';
-        o.iconKey = 'diaper19'; o.icBg = 'diaperS';
-      } else if (r.type === 'sleep') {
-        o.title = '睡眠';
-        o.detail = T.fmtDur(r.duration || 0);
-        o.iconKey = 'sleep19'; o.icBg = 'sleepS';
-      } else if (r.type === 'growth') {
-        o.title = '成长测量';
-        var parts = [];
-        if (r.weight > 0) { parts.push('体重 ' + r.weight + ' kg'); }
-        if (r.height > 0) { parts.push('身高 ' + r.height + ' cm'); }
-        o.detail = parts.join(' · ') || '已记录';
-        o.iconKey = 'growth19'; o.icBg = 'growthS';
-      }
+      var o = rowsOf.rowOf(r);
+      o.key = r.id;
+      o.hm = T.fmtHM(r.time);
       return o;
     });
+  },
+
+  buildTodoPreview: function () {
+    var start = T.todayStart();
+    var open = storage.todos().filter(function (t) { return !t.done; });
+    open.sort(function (a, b) { return a.due - b.due; });
+    var preview = open.slice(0, 2).map(function (t) {
+      var checkup = t.kind === 'checkup';
+      var other = t.kind === 'other';
+      return {
+        id: t.id,
+        title: t.title,
+        when: schedule.dueLabel(t.due),
+        late: t.due < start,
+        iconKey: checkup ? 'growth19' : (other ? 'todo19' : 'med19'),
+        icBg: checkup ? 'growthS' : 'priSoft'
+      };
+    });
+    return { preview: preview, more: Math.max(0, open.length - preview.length) };
+  },
+
+  checkTodoHint: function () {
+    var app = getApp();
+    var today = T.fmtYMD(Date.now());
+    if (app.globalData.todoHintDay === today) { return; }
+    var start = T.todayStart();
+    var n = 0;
+    storage.todos().forEach(function (t) {
+      if (!t.done && t.due <= start) { n++; }
+    });
+    if (!n) { return; }
+    app.globalData.todoHintDay = today;
+    var toast = this.selectComponent('#toast');
+    if (toast) { toast.show(n + ' 件待办到了或已逾期'); }
   },
 
   // 距上次喂养（供 ticker 每分钟轻量刷新）
   refreshNext: function () {
     var lf = this._lastFeed;
     if (!lf) {
-      this.setData({ 'next.since': 0, 'next.sub': '还没有喂养记录', 'next.nextHM': '--:--' });
+      this.setData({ 'next.hh': '00', 'next.mm': '00', 'next.sub': '还没有喂养记录', 'next.nextHM': '--:--' });
       this.drawRing(0);
       return;
     }
@@ -154,7 +177,8 @@ Page({
     var sinceMin = Math.max(0, Math.round((Date.now() - lf.time) / 60000));
     var nextTs = lf.time + interval * 60000;
     var patch = {
-      'next.since': sinceMin,
+      'next.hh': T.pad2(Math.floor(sinceMin / 60)),
+      'next.mm': T.pad2(sinceMin % 60),
       'next.sub': '上次 ' + T.fmtHM(lf.time) + ' · 建议间隔 ' + Math.round(interval / 60) + ' 小时',
       'next.nextHM': T.fmtHM(nextTs)
     };
@@ -213,15 +237,19 @@ Page({
       }
     }
 
-    if (!animate) { paint(pct); return; }
-    // 入场扫描动画（900ms ease-out）
-    var t0 = null;
-    function step(ts) {
-      if (t0 === null) { t0 = ts; }
-      var p = Math.min(1, (ts - t0) / 900);
+    if (!animate || motion.reduced()) { paint(pct); return; }
+    var seq = (this._ringSeq = (this._ringSeq || 0) + 1);
+    var t0 = 0;
+    function step() {
+      if (seq !== that._ringSeq || !that._ringCtx) { return; }
+      var now = Date.now();
+      if (!t0) { t0 = now; }
+      var p = Math.min(1, (now - t0) / 900);
       var eased = 1 - Math.pow(1 - p, 3);
-      paint(pct * eased);
-      if (p < 1 && that._ringCv) { that._ringCv.requestAnimationFrame(step); }
+      try { paint(pct * eased); } catch (e) { return; }
+      if (p < 1 && that._ringCv && that._ringCv.requestAnimationFrame) {
+        that._ringCv.requestAnimationFrame(step);
+      }
     }
     if (that._ringCv && that._ringCv.requestAnimationFrame) {
       that._ringCv.requestAnimationFrame(step);
@@ -250,8 +278,43 @@ Page({
     app.globalData.editingId = '';
     wx.switchTab({ url: '/pages/record/record' });
   },
-  goHistory: function () {
-    wx.navigateTo({ url: '/pages/history/history' });
+  goHistory: function (e) {
+    var type = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.type;
+    var url = '/pages/history/history';
+    if (type) { url += '?type=' + type; }
+    wx.navigateTo({ url: url });
+  },
+  goTodo: function () {
+    wx.navigateTo({ url: '/pages/todo/todo' });
+  },
+  toggleDark: function () {
+    var g = getApp().globalData;
+    theme.apply(g.theme, !g.dark);
+  },
+  onPageScroll: function () {
+    if (this.data.openId) { this.setData({ openId: '' }); }
+  },
+  onRecentTap: function (e) {
+    if (this.data.openId === e.currentTarget.dataset.id) {
+      this.setData({ openId: '' });
+      return;
+    }
+    this.goHistory();
+  },
+  onSwipeDrag: function (e) {
+    var id = e.currentTarget.dataset.id;
+    if (this.data.openId && this.data.openId !== id) { this.setData({ openId: '' }); }
+  },
+  onSwipeOpen: function (e) { this.setData({ openId: e.currentTarget.dataset.id }); },
+  onSwipeClose: function (e) {
+    if (this.data.openId === e.currentTarget.dataset.id) { this.setData({ openId: '' }); }
+  },
+  onSwipeDelete: function (e) {
+    var id = e.currentTarget.dataset.id;
+    if (!id) { return; }
+    storage.deleteRecord(id);
+    wx.showToast({ title: '已删除', icon: 'none' });
+    this.refresh();
   },
   onNextTap: function () {
     if (!this.data.hasFeed) { this.goAdd(); }
