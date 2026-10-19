@@ -27,6 +27,16 @@
   <view class="page-body">
     <view class="sec anim">常用</view>
     <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goHistory">
+        <view class="ric" style="background:var(--feedS)">
+          <image class="ric-ic" src="{{ic.records}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">查看记录</view>
+          <view class="rd">喂养、尿布、睡眠、体温和洗澡</view>
+        </view>
+        <view class="rr">{{profile.count ? profile.count + ' 条' : ''}} <text class="chev">›</text></view>
+      </view>
       <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goTodo">
         <view class="ric" style="background:var(--priSoft)">
           <image class="ric-ic" src="{{ic.todo}}" mode="aspectFit" />
@@ -49,66 +59,101 @@
       </view>
     </view>
 
-    <!-- ============ 数据 ============ -->
     <view class="sec anim">数据</view>
     <view class="card anim">
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExport">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goData">
         <view class="ric" style="background:var(--growthS)">
           <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
         </view>
         <view class="rbody">
-          <view class="rt">导出数据</view>
-          <view class="rd">生成 JSON 备份，可发给微信好友</view>
-        </view>
-        <text class="chev">›</text>
-      </view>
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExportCsv">
-        <view class="ric" style="background:var(--priSoft)">
-          <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">导出 CSV</view>
-          <view class="rd">表格形式，方便给医生 / 家人看</view>
-        </view>
-        <text class="chev">›</text>
-      </view>
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doShare">
-        <view class="ric" style="background:var(--growthS)">
-          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">分享摘要</view>
-          <view class="rd">{{sharing ? '正在生成…' : '生成图文卡片，可发给家人 / 医生'}}</view>
-        </view>
-        <text class="chev">›</text>
-      </view>
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doImport">
-        <view class="ric" style="background:var(--priSoft)">
-          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">导入数据</view>
-          <view class="rd">从聊天文件恢复记录</view>
+          <view class="rt">数据</view>
+          <view class="rd">导出、导入、分享摘要和清空</view>
         </view>
         <text class="chev">›</text>
       </view>
     </view>
 
-    <!-- ============ 危险区（独立成卡，物理隔离） ============ -->
-    <view class="card card-danger anim">
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doClear">
-        <view class="ric ric-danger">
-          <image class="ric-ic" src="{{ic.trash}}" mode="aspectFit" />
+    <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="openFeedback">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.chat}}" mode="aspectFit" />
         </view>
         <view class="rbody">
-          <view class="rt danger">清空数据</view>
-          <view class="rd">不可恢复，建议先导出备份</view>
+          <view class="rt">问题反馈 / 建议</view>
+          <view class="rd">使用中有问题，或想加功能，点这里说说</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <!-- 推荐给朋友：小程序未认证，分享暂不可用，先隐藏
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="openShare">
+        <view class="ric" style="background:var(--sleepS)">
+          <image class="ric-ic" src="{{ic.share}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">推荐给朋友</view>
+          <view class="rd">小程序码，可保存或发给微信好友</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      -->
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goLog">
+        <view class="ric" style="background:var(--growthS)">
+          <image class="ric-ic" src="{{ic.log}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">更新日志</view>
+          <view class="rd">{{logHint}}</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="onThanks">
+        <view class="ric" style="background:var(--tempS)">
+          <image class="ric-ic" src="{{ic.heart}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">创造不易，感谢支持</view>
+          <view class="rd">你的支持，是继续做下去的动力</view>
         </view>
         <text class="chev">›</text>
       </view>
     </view>
 
     <view class="foot anim">喂养记录 v1.0.0<br />数据全部保存在本机，不上传云端</view>
+  </view>
+
+  <!-- 推荐给朋友弹窗，与上面入口一起恢复
+  <view class="fb-mask" wx:if="{{shareOpen}}" bindtap="closeShare">
+    <view class="fb-card share-card" catchtap="noop">
+      <view class="fb-t">推荐给朋友</view>
+      <view class="fb-note">微信扫一扫即可打开。长按图片也可以保存或发送。</view>
+      <image wx:if="{{!codeMissing}}" class="share-code" src="{{codeImg}}" mode="aspectFit" show-menu-by-longpress="{{true}}" binderror="onCodeError" />
+      <view class="share-empty" wx:if="{{codeMissing}}">小程序码图片还没放进安装包。请把公众平台下载的码保存为 assets/mp-code.png 后重新编译。</view>
+      <view class="share-acts">
+        <view class="share-act" hover-class="hv-row" hover-stay-time="60" bindtap="saveCode">保存图片</view>
+        <button class="share-act share-act-pri" hover-class="share-act-on" hover-stay-time="60" open-type="share">分享给好友</button>
+      </view>
+      <view class="fb-close" hover-class="hv-row" hover-stay-time="60" bindtap="closeShare">关闭</view>
+    </view>
+  </view>
+  -->
+
+  <view class="fb-mask" wx:if="{{fbOpen}}" bindtap="closeFeedback">
+    <view class="fb-card" catchtap="noop">
+      <view class="fb-t">问题反馈 / 建议</view>
+      <view class="fb-note">使用中遇到问题，或有想加的功能，添加微信或发邮件即可沟通。</view>
+      <view class="fb-note">也可按你的需求，承接软件定制开发。</view>
+      <view class="fb-row" hover-class="hv-row" hover-stay-time="60" data-k="wx" bindtap="copyFeedback">
+        <view class="fb-k">微信号</view>
+        <view class="fb-v">{{fbWxMask}}</view>
+        <view class="fb-copy">复制</view>
+      </view>
+      <view class="fb-row" hover-class="hv-row" hover-stay-time="60" data-k="mail" bindtap="copyFeedback">
+        <view class="fb-k">邮箱</view>
+        <view class="fb-v">{{fbMailMask}}</view>
+        <view class="fb-copy">复制</view>
+      </view>
+      <view class="fb-close" hover-class="hv-row" hover-stay-time="60" bindtap="closeFeedback">关闭</view>
+    </view>
   </view>
 
   <noise-dock id="noiseDock" />

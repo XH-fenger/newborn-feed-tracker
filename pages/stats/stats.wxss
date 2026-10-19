@@ -1,4 +1,27 @@
-/* 统计页专属样式：区间切换 / 成长指标 Tab / 百分位提示 */
+/* 类型分段固定；区间和图表在下方独立滚动，避免画布盖住分段 */
+
+.stats-page {
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.page.elder.stats-page { padding-bottom: 0; }
+
+.stats-pin {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 16;
+  padding-bottom: 6px;
+  background: rgb(var(--bgRgb));
+}
+.stats-scroll {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+.stats-scroll .share-bar { margin-bottom: 18px; }
 
 .rng { margin: 12px 16px 0; }
 .rng-pick { display: flex; align-items: center; gap: 10px; margin-top: 10px; }

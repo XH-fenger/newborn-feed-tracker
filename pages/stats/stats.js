@@ -38,6 +38,7 @@ Page({
     dayKey: '',
     dayTitle: '',
     dayRows: [],
+    scrollH: 500,
     ic: {},
     openId: '',
     rangeMode: '7',
@@ -57,7 +58,12 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    this.setData({ theme: g.theme, dark: g.dark, elder: !!g.elder });
+    this.setData({
+      theme: g.theme,
+      dark: g.dark,
+      elder: !!g.elder,
+      scrollH: this.scrollBox(!!g.elder)
+    });
     if (typeof this.getTabBar === 'function') {
       var tb = this.getTabBar();
       if (tb) { tb.sync(g.theme, g.dark); tb.setSelected(2); }
@@ -79,13 +85,28 @@ Page({
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
-        temp19: icons.svg('temp', c.temp, 19, 2)
+        temp19: icons.svg('temp', c.temp, 19, 2),
+        bath19: icons.svg('bath', c.bath, 19, 2)
       }
     };
   },
 
-  onPageScroll: function (e) {
-    var sc = e.scrollTop > 6;
+  scrollBox: function (elder) {
+    var m = require('../../utils/nav.js').metrics();
+    var top = m.sbH + m.navH + 79;
+    var info = {};
+    try { info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync(); } catch (e) { }
+    var winH = info.windowHeight || 667;
+    var safeBottom = 0;
+    if (info.safeArea && info.screenHeight) {
+      safeBottom = Math.max(0, info.screenHeight - info.safeArea.bottom);
+    }
+    var h = Math.round(winH - top - ((elder ? 108 : 96) + safeBottom));
+    return h > 200 ? h : 200;
+  },
+
+  onBodyScroll: function (e) {
+    var sc = e.detail.scrollTop > 6;
     if (sc !== this.data.navSc) {
       this.setData({ navSc: sc });
     }

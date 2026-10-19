@@ -13,7 +13,7 @@
   --ink3: #6B7674;
   --line: rgba(14, 26, 25, .07);
   --line2: rgba(14, 26, 25, .13);
-  --r-xl: 24px; --r-lg: 20px; --r-md: 14px; --r-sm: 10px;
+  --r-xl: 16px; --r-lg: 12px; --r-md: 10px; --r-sm: 8px;
   --sh1: 0 1px 2px rgba(14, 40, 38, .05), 0 6px 16px rgba(14, 40, 38, .06);
   --sh2: 0 12px 34px rgba(14, 40, 38, .13);
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
@@ -23,6 +23,7 @@
   --sleep: #6A57EE;  --sleepS: #EEEBFE;
   --growth: #2C6FE0; --growthS: #E8F0FE;
   --temp: #D4533A; --tempS: #FDECEA;
+  --bath: #1A8FB8; --bathS: #E5F5FB;
   --danger: #D93A3F; --dangerS: #FDE9E9;
 }
 
@@ -78,8 +79,9 @@
   --sleepS: rgba(169, 155, 255, .20);
   --growthS: rgba(111, 176, 255, .20);
   --tempS: rgba(255, 139, 120, .20);
+  --bathS: rgba(94, 196, 232, .20);
   --dangerS: rgba(255, 107, 111, .20);
   /* 语义/主色提亮，保证暗底可读 */
   --pri: #3FD3C1; --pri2: #5FE0D2; --priInk: #7FE9DC;
-  --feed: #3FD6C6; --diaper: #F2B24A; --sleep: #A99BFF; --growth: #6FB0FF; --temp: #FF8B78; --danger: #FF6B6F;
+  --feed: #3FD6C6; --diaper: #F2B24A; --sleep: #A99BFF; --growth: #6FB0FF; --temp: #FF8B78; --bath: #5EC4E8; --danger: #FF6B6F;
 }

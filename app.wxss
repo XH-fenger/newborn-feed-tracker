@@ -62,6 +62,11 @@ page {
   pointer-events: none; white-space: nowrap;
 }
 .nav-mid-title { font-size: 16.5px; font-weight: 600; color: var(--ink); }
+.nav-mid-left {
+  left: 0; right: auto; transform: none;
+  justify-content: flex-start;
+  max-width: calc(100% - 96px);
+}
 .nav-back-ic-w { margin-left: auto; }
 
 .nav.nav-blank {
@@ -229,6 +234,8 @@ page {
 .seg-5 .seg-item { font-size: 12.5px; letter-spacing: 0; padding-left: 0; padding-right: 0; }
 .seg-6 .seg-thumb { width: calc((100% - 6px) / 6); }
 .seg-6 .seg-item { font-size: 12px; letter-spacing: 0; padding-left: 0; padding-right: 0; }
+.seg-7 .seg-thumb { width: calc((100% - 6px) / 7); }
+.seg-7 .seg-item { font-size: 12px; letter-spacing: 0; padding-left: 0; padding-right: 0; }
 .seg-2 .seg-thumb { width: calc((100% - 6px) / 2); }
 .dark .seg-thumb { box-shadow: 0 2px 8px rgba(0, 0, 0, .55); }
 .seg-item { position: relative; z-index: 1; flex: 1; padding: 10px 2px;

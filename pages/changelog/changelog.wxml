@@ -1,0 +1,37 @@
+<view class="page clog-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">更新日志</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 8}}px">
+    <view class="clog-lead anim" wx:if="{{latest}}">最近更新于 {{latest}}</view>
+
+    <view class="clog-day anim" wx:for="{{groups}}" wx:key="date">
+      <view class="clog-day-h">{{item.date}}</view>
+      <view class="clog-entry {{it.last ? 'is-last' : ''}}" wx:for="{{item.items}}" wx:for-item="it" wx:key="hash">
+        <view class="clog-rail">
+          <view class="clog-dot {{it.latest ? 'is-new' : ''}}"></view>
+          <view class="clog-stem"></view>
+        </view>
+        <view class="clog-card">
+          <view class="clog-meta">
+            <text class="clog-hash">{{it.hash}}</text>
+            <text class="clog-badge" wx:if="{{it.latest}}">最新</text>
+          </view>
+          <view class="clog-line" wx:for="{{it.lines}}" wx:for-item="line" wx:for-index="li" wx:key="li">{{line}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="foot anim">内容来自版本提交记录</view>
+  </view>
+
+  <noise-dock id="noiseDock" />
+</view>

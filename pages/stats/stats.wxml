@@ -1,14 +1,13 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+<view class="page stats-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
-      <view class="nav-mid">{{navMeta}}</view>
+      <view class="nav-mid nav-mid-left">{{navMeta}}</view>
     </view>
   </view>
 
-  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
-
-    <view class="seg seg-5 anim">
+  <view class="stats-pin" style="top:{{sbH + navH + 9}}px">
+    <view class="seg seg-5">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -18,6 +17,9 @@
         bindtap="onSegTap"
       >{{item.t}}</view>
     </view>
+  </view>
+
+  <scroll-view class="stats-scroll" scroll-y style="top:{{sbH + navH + 79}}px;height:{{scrollH}}px" bindscroll="onBodyScroll">
 
     <!-- ============ 区间（近 7 / 30 天 / 自定义） ============ -->
     <view class="rng anim" wx:if="{{seg !== 'growth'}}">
@@ -256,8 +258,7 @@
     <view class="share-bar anim">
       <view class="share-btn {{sharing ? 'off' : ''}}" hover-class="hv-pill" hover-stay-time="80" bindtap="genShare">{{sharing ? '正在生成…' : '📤 生成今日摘要卡片'}}</view>
     </view>
-
-  </view>
+  </scroll-view>
 
   <noise-dock id="noiseDock" />
   <toast id="toast" />

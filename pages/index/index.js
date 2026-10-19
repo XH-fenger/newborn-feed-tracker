@@ -13,6 +13,7 @@ Page({
   data: {
     theme: 'indigo',
     dark: false,
+    homeVer: 2,
     sbH: 44,
     navBottom: 88,
     capsuleRight: 96,
@@ -20,7 +21,7 @@ Page({
     baby: { name: '宝宝' },
     heroMeta: '',
     dayChip: '第 1 天',
-    today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0h 0m' },
+    today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0.0 h' },
     todayTemp: {
       am: { empty: true, text: '待测', sub: '建议 8:00', hi: false, lo: false, id: '' },
       pm: { empty: true, text: '待测', sub: '建议 20:00', hi: false, lo: false, id: '' }
@@ -83,6 +84,7 @@ Page({
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
         temp19: icons.svg('temp', c.temp, 19, 2),
+        bath19: icons.svg('bath', c.bath, 19, 2),
         todo19: icons.svg('calendar', c.pri, 19, 2),
         empty: icons.svg('list', c.ink3, 44, 1.6)
       }
@@ -110,7 +112,7 @@ Page({
         feedCount: t.feedCount,
         feedMl: t.feedMl,
         diaper: t.diaper,
-        sleepText: Math.floor(t.sleepMin / 60) + 'h ' + (t.sleepMin % 60) + 'm'
+        sleepText: (Math.round(t.sleepMin / 6) / 10).toFixed(1) + ' h'
       },
       todayTemp: stats.todayTempView(records),
       hasFeed: !!lf,
@@ -249,8 +251,8 @@ Page({
       var cv = res[0].node;
       var dpr = 2;
       try { dpr = wx.getWindowInfo().pixelRatio || 2; } catch (e) { }
-      cv.width = 82 * dpr;
-      cv.height = 82 * dpr;
+      cv.width = 72 * dpr;
+      cv.height = 72 * dpr;
       var ctx = cv.getContext('2d');
       ctx.scale(dpr, dpr);
       that._ringCtx = ctx;
@@ -264,21 +266,47 @@ Page({
     this._ringPct = pct;
     var ctx = this._ringCtx;
     var that = this;
+    // 1：等宽描边。2：细轨道 + 粗进度 + 端点圆头（deftlycreative/progress-ring）
+    var ringVer = 2;
 
     function paint(p) {
-      ctx.clearRect(0, 0, 82, 82);
-      ctx.lineWidth = 6;
+      var cx = 36;
+      var cy = 36;
+      var r = 29;
+      var a0 = -Math.PI / 2;
+      var clamped = Math.min(1, Math.max(0, p));
+      ctx.clearRect(0, 0, 72, 72);
       ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(255,255,255,.26)';
+      if (ringVer === 1) {
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'rgba(255,255,255,.26)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        if (clamped > 0.005) {
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, a0, a0 + Math.PI * 2 * clamped);
+          ctx.stroke();
+        }
+        return;
+      }
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.28)';
       ctx.beginPath();
-      ctx.arc(41, 41, 34, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
-      if (p > 0.005) {
+      if (clamped > 0.005) {
+        var a1 = a0 + Math.PI * 2 * clamped;
+        ctx.lineWidth = 6;
         ctx.strokeStyle = '#FFFFFF';
         ctx.beginPath();
-        var a = -Math.PI / 2;
-        ctx.arc(41, 41, 34, a, a + Math.PI * 2 * Math.min(1, p));
+        ctx.arc(cx, cy, r, a0, a1);
         ctx.stroke();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(cx + r * Math.cos(a1), cy + r * Math.sin(a1), 3.2, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 

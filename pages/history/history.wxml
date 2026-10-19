@@ -4,7 +4,7 @@
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
       <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
-        <text>首页</text>
+        <text>返回</text>
       </view>
       <view class="nav-mid">共 {{total}} 条</view>
     </view>
@@ -12,7 +12,7 @@
 
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
-    <view class="seg seg-6 anim">
+    <view class="seg seg-7 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{filters}}" wx:key="k"

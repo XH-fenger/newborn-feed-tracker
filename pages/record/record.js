@@ -1,4 +1,4 @@
-// 记一笔 —— 喂养 / 尿布 / 睡眠 / 成长 / 补充 / 体温（新增 + 编辑共用）
+// 记一笔 —— 喂养 / 尿布 / 睡眠 / 成长 / 补充 / 体温 / 洗澡（新增 + 编辑共用）
 var storage = require('../../utils/storage.js');
 var theme = require('../../utils/theme.js');
 var icons = require('../../utils/icons.js');
@@ -10,7 +10,8 @@ var SEGS = [
   { k: 'sleep', t: '睡眠' },
   { k: 'growth', t: '成长' },
   { k: 'med', t: '补充' },
-  { k: 'temp', t: '体温' }
+  { k: 'temp', t: '体温' },
+  { k: 'bath', t: '洗澡' }
 ];
 
 var rowsOf = require('../../utils/recordRow.js');
@@ -42,7 +43,7 @@ Page({
       feedMethod: 'breast',
       side: 'right',
       dur: 15,
-      amt: 120,
+      amt: 50,
       showSide: false,
       showDur: false,
       showAmt: true,
@@ -67,6 +68,7 @@ Page({
     celsius: '36.5',
     tempHint: '',
     tempHi: false,
+    bathMin: 10,
     fieldErr: ''
   },
 
@@ -139,7 +141,7 @@ Page({
       feedMethod: 'breast',
       side: 'right',
       dur: 15,
-      amt: 120,
+      amt: 50,
       showSide: false, showDur: false, showAmt: true,
       diaperType: 'poop',
       sDate: T.nowYMD(), sTime: T.nowHM(),
@@ -150,6 +152,7 @@ Page({
       tempSlot: new Date().getHours() < 14 ? 'am' : 'pm',
       celsius: '36.5',
       tempHint: '',
+      bathMin: 10,
       fieldErr: ''
     });
     this.stopTimer(true);
@@ -196,6 +199,8 @@ Page({
     } else if (r.type === 'temp') {
       patch.tempSlot = rowsOf.tempSlot(r);
       patch.celsius = rowsOf.fmtC(r.celsius);
+    } else if (r.type === 'bath') {
+      patch.bathMin = r.duration > 0 ? r.duration : 0;
     }
     this.setData(patch);
     this._editId = id;
@@ -222,7 +227,7 @@ Page({
     if (v === this.data.feedMethod) { return; }
     // 母乳是解冻后按量瓶喂，和奶粉一样记毫升；只有混合才保留亲喂侧与时长
     var amt = this.data.amt;
-    if (!(amt > 0)) { amt = 120; }
+    if (!(amt > 0)) { amt = 50; }
     this.setData({
       feedMethod: v,
       showSide: v === 'mixed',
@@ -270,6 +275,17 @@ Page({
   },
   onAmtBlur: function () {
     this.setData({ amt: this.clampInt(this.data.amt, 600) });
+  },
+  stepBath: function (e) {
+    this.setData({ bathMin: this.stepBy(this.data.bathMin, e.currentTarget.dataset.op, 90), fieldErr: '' });
+  },
+  onBathInput: function (e) {
+    var raw = e.detail.value;
+    if (raw === '') { this.setData({ bathMin: '', fieldErr: '' }); return; }
+    this.setData({ bathMin: this.clampInt(raw, 90), fieldErr: '' });
+  },
+  onBathBlur: function () {
+    this.setData({ bathMin: this.clampInt(this.data.bathMin, 90) });
   },
 
   /* ---------- 母乳计时器（时间戳驱动，切后台回来自动校准） ---------- */
@@ -470,6 +486,13 @@ Page({
         celsius: Math.round(c * 10) / 10,
         note: d.note
       };
+    } else if (d.seg === 'bath') {
+      rec = {
+        type: 'bath',
+        time: T.tsOf(d.dateStr, d.timeStr),
+        duration: this.clampInt(d.bathMin, 90),
+        note: d.note
+      };
     }
 
     if (!rec) { return; }
@@ -479,7 +502,7 @@ Page({
     } else {
       storage.addRecord(rec);
     }
-    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充剂', temp: '体温' }[d.seg];
+    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充剂', temp: '体温', bath: '洗澡' }[d.seg];
     var toast = this.selectComponent('#toast');
     if (toast) { toast.show('已保存' + segName + '记录'); }
     var that = this;

@@ -11,7 +11,9 @@
     "pages/streak/streak",
     "pages/calc/calc",
     "pages/noise/noise",
-    "pages/settings/settings"
+    "pages/settings/settings",
+    "pages/data/data",
+    "pages/changelog/changelog"
   ],
   "requiredBackgroundModes": ["audio"],
   "window": {
