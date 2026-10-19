@@ -13,10 +13,10 @@ var THEMES = {
 };
 
 // 语义类别色（亮色，四主题一致）
-var SEM = { diaper: '#BE7210', sleep: '#6A57EE', growth: '#2C6FE0', danger: '#D93A3F' };
+var SEM = { diaper: '#BE7210', sleep: '#6A57EE', growth: '#2C6FE0', temp: '#D4533A', danger: '#D93A3F' };
 // 暗黑提亮色（四主题一致，主色渐变头图保留）
 var DARKLIFT = { pri: '#3FD3C1', pri2: '#5FE0D2', priInk: '#7FE9DC', feed: '#3FD6C6',
-  diaper: '#F2B24A', sleep: '#A99BFF', growth: '#6FB0FF', danger: '#FF6B6F' };
+  diaper: '#F2B24A', sleep: '#A99BFF', growth: '#6FB0FF', temp: '#FF8B78', danger: '#FF6B6F' };
 // 图表网格线 / 轴标签
 var INK = { light: { grid: 'rgba(14,26,25,.07)', axl: '#6B7674' },
   dark: { grid: 'rgba(255,255,255,.08)', axl: '#8E97A0' } };
@@ -26,7 +26,7 @@ function colors(theme, dark) {
   var c = {
     name: t.name, pri: t.pri, pri2: t.pri2, priInk: t.priInk, priSoft: t.priSoft,
     g1: t.g1, g2: t.g2, bg: t.bg, bgRgb: t.bgRgb, feed: t.feed,
-    diaper: SEM.diaper, sleep: SEM.sleep, growth: SEM.growth, danger: SEM.danger,
+    diaper: SEM.diaper, sleep: SEM.sleep, growth: SEM.growth, temp: SEM.temp, danger: SEM.danger,
     card: dark ? '#1C1E23' : '#FFFFFF', fill: dark ? '#272A30' : '#F1F5F4',
     ink: dark ? '#ECEEF1' : '#0E1A19', ink2: dark ? '#A7B0B6' : '#5B6B69', ink3: dark ? '#8E97A0' : '#6B7674',
     grid: dark ? INK.dark.grid : INK.light.grid, axl: dark ? INK.dark.axl : INK.light.axl

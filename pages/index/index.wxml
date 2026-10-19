@@ -3,11 +3,13 @@
   <!-- Hero：渐变头图 + 日龄 chip -->
   <view class="hero">
     <view class="hero-nav" style="padding-top:{{sbH}}px;height:{{navBottom}}px;padding-right:{{capsuleRight}}px">
-      <view class="hero-top">
+      <view class="daychip-slot" style="top:{{sbH}}px;height:{{navH}}px">
         <view class="daychip">
           <image class="daychip-ic" src="{{ic.sun}}" mode="aspectFit" />
           <text>{{dayChip}}</text>
         </view>
+      </view>
+      <view class="hero-top">
         <view class="hero-theme" hover-class="hv-theme" hover-stay-time="80" bindtap="toggleDark" aria-role="switch" aria-checked="{{dark}}" aria-label="深色模式">
           <view class="hero-theme-dot">
             <image class="hero-theme-ic" src="{{dark ? ic.sunBtn : ic.moonBtn}}" mode="aspectFit" />
@@ -58,6 +60,34 @@
     </view>
   </view>
 
+  <view class="tempday anim">
+    <view class="tempday-h">
+      <text class="tempday-t">今日体温</text>
+      <text class="tempday-sub">早晚各测一次</text>
+    </view>
+    <view class="tempday-row">
+      <view class="tslot {{todayTemp.am.empty ? 'empty' : ''}}" hover-class="hv-cell" hover-stay-time="80" data-slot="am" bindtap="onTempTap">
+        <view class="tslot-k">早测</view>
+        <view class="tslot-v {{todayTemp.am.hi ? 'hi' : ''}} {{todayTemp.am.lo ? 'lo' : ''}}">{{todayTemp.am.text}}<small wx:if="{{!todayTemp.am.empty}}">°C</small></view>
+        <view class="tslot-s">{{todayTemp.am.sub}}</view>
+      </view>
+      <view class="tslot {{todayTemp.pm.empty ? 'empty' : ''}}" hover-class="hv-cell" hover-stay-time="80" data-slot="pm" bindtap="onTempTap">
+        <view class="tslot-k">晚测</view>
+        <view class="tslot-v {{todayTemp.pm.hi ? 'hi' : ''}} {{todayTemp.pm.lo ? 'lo' : ''}}">{{todayTemp.pm.text}}<small wx:if="{{!todayTemp.pm.empty}}">°C</small></view>
+        <view class="tslot-s">{{todayTemp.pm.sub}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="fever-banner anim" wx:if="{{fever}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goMed">
+    <view class="fever-ic">🌡️</view>
+    <view class="fever-b">
+      <view class="fever-t">体温偏高，建议记录用药</view>
+      <view class="fever-s">点此在「记录」中补一笔补充剂 / 用药</view>
+    </view>
+    <text class="chev">›</text>
+  </view>
+
   <!-- 下次喂养渐变焦点卡 + 环形进度 -->
   <view class="next anim" hover-class="hv-next" hover-stay-time="80" bindtap="onNextTap">
     <view class="next-l">
@@ -78,6 +108,15 @@
         <span>{{hasFeed ? '下次建议' : '待记录'}}</span>
       </view>
     </view>
+  </view>
+
+  <view class="vac-banner anim" wx:if="{{vacCard}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goTodo">
+    <view class="vac-ic">💉</view>
+    <view class="vac-b">
+      <view class="vac-t">距下次接种 · <text class="vac-n">{{vacCard.daysText}}</text></view>
+      <view class="vac-s">{{vacCard.title}} · {{vacCard.when}}</view>
+    </view>
+    <text class="chev">›</text>
   </view>
 
   <view class="sec sec-row sec-tap anim" wx:if="{{todoPreview.length}}" hover-class="hv-sec" hover-stay-time="80" bindtap="goTodo">

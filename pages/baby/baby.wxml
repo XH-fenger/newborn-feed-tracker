@@ -6,6 +6,7 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>返回</text>
       </view>
+      <view class="nav-mid nav-mid-title">宝宝资料</view>
     </view>
   </view>
 
@@ -35,6 +36,14 @@
       <view class="fld">
         <view class="flabel">出生体重 (kg)</view>
         <input class="tx" type="digit" value="{{birthWeight}}" placeholder="如 3.4（选填）" placeholder-class="ph" bindinput="onWeight" />
+      </view>
+      <view class="fld">
+        <view class="flabel">出生身高 (cm)</view>
+        <input class="tx" type="digit" value="{{birthHeight}}" placeholder="如 50.0（选填，用于身高曲线）" placeholder-class="ph" bindinput="onHeight" />
+      </view>
+      <view class="fld">
+        <view class="flabel">出生头围 (cm)</view>
+        <input class="tx" type="digit" value="{{birthHead}}" placeholder="如 34.0（选填，用于头围曲线）" placeholder-class="ph" bindinput="onHead" />
       </view>
     </view>
 

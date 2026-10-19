@@ -7,7 +7,7 @@ function defaultDb() {
     baby: { name: '宝宝', gender: 'M', birthday: '', birthWeight: '' },
     records: [],
     todos: [],
-    settings: { theme: 'indigo', dark: false, reminderEnabled: true, feedInterval: 180,
+    settings: { theme: 'indigo', dark: false, reminderEnabled: true, feedInterval: 180, nightFeedInterval: 240,
       alarmSnoozeUntil: 0, alarmDismissAt: 0, alarmFeedId: '' }
   };
 }
@@ -117,6 +117,7 @@ function addTodos(list) {
       title: t.title,
       due: t.due,
       note: t.note || '',
+      dose: t.dose || '',
       done: false,
       doneAt: 0
     });

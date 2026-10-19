@@ -19,7 +19,7 @@
       </view>
       <view class="profile-stats">
         <view class="pstat"><b>{{profile.count}}<small>条</small></b><span>累计记录</span></view>
-        <view class="pstat"><b>{{profile.days}}<small>天</small></b><span>已坚持</span></view>
+        <view class="pstat" hover-class="hv-pstat" hover-stay-time="60" bindtap="goStreak"><b>{{profile.days}}<small>天</small></b><span>已坚持</span></view>
         <view class="pstat"><b>{{profile.daily}}<small>条</small></b><span>日均</span></view>
       </view>
     </view>
@@ -49,6 +49,16 @@
           <view class="rd">新生儿 2-3 小时一次</view>
         </view>
         <view class="rr">{{intervalTxt}} <text class="chev">›</text></view>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickNightInterval">
+        <view class="ric" style="background:var(--sleepS)">
+          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">夜间间隔</view>
+          <view class="rd">22:00–07:00 自动放宽，少打扰睡眠</view>
+        </view>
+        <view class="rr">{{nightIntervalTxt}} <text class="chev">›</text></view>
       </view>
       <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goTodo">
         <view class="ric" style="background:var(--priSoft)">
@@ -102,6 +112,26 @@
         <view class="rbody">
           <view class="rt">导出数据</view>
           <view class="rd">生成 JSON 备份，可发给微信好友</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExportCsv">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导出 CSV</view>
+          <view class="rd">表格形式，方便给医生 / 家人看</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doShare">
+        <view class="ric" style="background:var(--growthS)">
+          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">分享摘要</view>
+          <view class="rd">{{sharing ? '正在生成…' : '生成图文卡片，可发给家人 / 医生'}}</view>
         </view>
         <text class="chev">›</text>
       </view>

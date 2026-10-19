@@ -6,13 +6,13 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>首页</text>
       </view>
-      <view class="nav-meta">共 {{total}} 条</view>
+      <view class="nav-mid">共 {{total}} 条</view>
     </view>
   </view>
 
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
-    <view class="seg seg-5 anim">
+    <view class="seg seg-6 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{filters}}" wx:key="k"
@@ -62,4 +62,6 @@
     </view>
 
   </view>
+
+  <toast id="toast" />
 </view>

@@ -4,5 +4,7 @@
   "navigationBarBackgroundColor": "#000000",
   "backgroundColor": "#000000",
   "disableScroll": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "toast": "/components/toast/toast"
+  }
 }

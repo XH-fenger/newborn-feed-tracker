@@ -13,6 +13,23 @@ var MEDS = [
   { k: 'other', t: '其他' }
 ];
 
+function tempSlot(r) {
+  if (!r) { return 'am'; }
+  if (r.slot === 'pm' || r.slot === 'am') { return r.slot; }
+  return new Date(r.time).getHours() < 14 ? 'am' : 'pm';
+}
+
+function tempFlag(c) {
+  if (!(c > 0)) { return ''; }
+  if (c >= 37.5) { return '偏高'; }
+  if (c < 36) { return '偏低'; }
+  return '';
+}
+
+function fmtC(n) {
+  return (Math.round(Number(n) * 10) / 10).toFixed(1);
+}
+
 function medLabel(r) {
   if (!r) { return '补充剂'; }
   if (r.medKey === 'other') { return r.medName || '其他补充剂'; }
@@ -61,8 +78,18 @@ function rowOf(r) {
     o.detail = (r.dose ? r.dose : '已服用') + (r.note ? ' · ' + r.note : '');
     o.iconKey = 'med19';
     o.icBg = 'priSoft';
+  } else if (r.type === 'temp') {
+    var slotName = tempSlot(r) === 'pm' ? '晚测' : '早测';
+    var flag = tempFlag(r.celsius);
+    o.title = '体温 · ' + slotName;
+    o.detail = fmtC(r.celsius) + ' °C' + (flag ? ' · ' + flag : '') + (r.note ? ' · ' + r.note : '');
+    o.iconKey = 'temp19';
+    o.icBg = 'tempS';
   }
   return o;
 }
 
-module.exports = { MEDS: MEDS, medLabel: medLabel, rowOf: rowOf };
+module.exports = {
+  MEDS: MEDS, medLabel: medLabel, rowOf: rowOf,
+  tempSlot: tempSlot, tempFlag: tempFlag, fmtC: fmtC
+};

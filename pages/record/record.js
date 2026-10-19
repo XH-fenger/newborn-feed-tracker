@@ -1,4 +1,4 @@
-// 记一笔 —— 喂养 / 尿布 / 睡眠 / 成长 四类表单（新增 + 编辑共用）
+// 记一笔 —— 喂养 / 尿布 / 睡眠 / 成长 / 补充 / 体温（新增 + 编辑共用）
 var storage = require('../../utils/storage.js');
 var theme = require('../../utils/theme.js');
 var icons = require('../../utils/icons.js');
@@ -9,10 +9,12 @@ var SEGS = [
   { k: 'diaper', t: '尿布' },
   { k: 'sleep', t: '睡眠' },
   { k: 'growth', t: '成长' },
-  { k: 'med', t: '补充' }
+  { k: 'med', t: '补充' },
+  { k: 'temp', t: '体温' }
 ];
 
-var MEDS = require('../../utils/recordRow.js').MEDS;
+var rowsOf = require('../../utils/recordRow.js');
+var MEDS = rowsOf.MEDS;
 var DOSE_PH = {
   k1: '如 1 滴',
   vd: '如 1 滴 或 400 IU',
@@ -60,6 +62,11 @@ Page({
     medName: '',
     dose: '',
     dosePh: DOSE_PH.vd,
+    // —— 体温（默认早晚各一次：14 点前早测，之后晚测）——
+    tempSlot: 'am',
+    celsius: '36.5',
+    tempHint: '',
+    tempHi: false,
     fieldErr: ''
   },
 
@@ -72,7 +79,6 @@ Page({
     var g = getApp().globalData;
     var patch = { theme: g.theme, dark: g.dark, navMeta: '今天 · ' + T.fmtCNMD(Date.now()) };
     var ic = this.buildIcons();
-    patch.icBack = ic.icBack;
     patch.icCal = ic.icCal;
     patch.icClock = ic.icClock;
     this.setData(patch);
@@ -93,10 +99,15 @@ Page({
       this.syncTimerNow();
     } else {
       var pending = app.globalData.pendingType;
+      var pendingSlot = app.globalData.pendingSlot;
       this.initForm();
       if (pending) {
         this.switchSegByKey(pending);
+        if (pending === 'temp' && (pendingSlot === 'am' || pendingSlot === 'pm')) {
+          this.applyTempSlot(pendingSlot, true);
+        }
         app.globalData.pendingType = '';
+        app.globalData.pendingSlot = '';
       }
     }
   },
@@ -106,11 +117,9 @@ Page({
     this.initForm();
   },
 
-  // 主题相关图标（返回箭头 / 日历 / 时钟）
   buildIcons: function () {
     var c = theme.current();
     return {
-      icBack: icons.svg('back', c.priInk, 17, 2.6),
       icCal: icons.svg('calendar', c.ink3, 17, 1.9),
       icClock: icons.svg('clock', c.ink3, 17, 1.9)
     };
@@ -138,6 +147,9 @@ Page({
       sleepDurTxt: '0 分',
       weight: '', height: '', headCirc: '',
       medKey: 'vd', medName: '', dose: '', dosePh: DOSE_PH.vd,
+      tempSlot: new Date().getHours() < 14 ? 'am' : 'pm',
+      celsius: '36.5',
+      tempHint: '',
       fieldErr: ''
     });
     this.stopTimer(true);
@@ -181,9 +193,13 @@ Page({
       patch.medName = r.medName || '';
       patch.dose = r.dose || '';
       patch.dosePh = DOSE_PH[patch.medKey] || DOSE_PH.other;
+    } else if (r.type === 'temp') {
+      patch.tempSlot = rowsOf.tempSlot(r);
+      patch.celsius = rowsOf.fmtC(r.celsius);
     }
     this.setData(patch);
     this._editId = id;
+    if (r.type === 'temp') { this.refreshTempHint(); }
   },
 
   /* ---------- 分段切换 ---------- */
@@ -197,6 +213,7 @@ Page({
     var i = e.currentTarget.dataset.i;
     if (k === this.data.seg) { return; }
     this.setData({ seg: k, segIndex: i, fieldErr: '' });
+    if (k === 'temp') { this.refreshTempHint(); this.refreshTempFever(); }
   },
 
   /* ---------- 行内分段 ---------- */
@@ -283,7 +300,10 @@ Page({
   },
 
   /* ---------- picker ---------- */
-  onDateChange: function (e) { this.setData({ dateStr: e.detail.value }); },
+  onDateChange: function (e) {
+    this.setData({ dateStr: e.detail.value });
+    this.refreshTempHint();
+  },
   onTimeChange: function (e) { this.setData({ timeStr: e.detail.value }); },
   onSDate: function (e) { this.setData({ sDate: e.detail.value, fieldErr: '' }); this.calcSleep(); },
   onSTime: function (e) { this.setData({ sTime: e.detail.value, fieldErr: '' }); this.calcSleep(); },
@@ -307,6 +327,81 @@ Page({
   },
   onMedName: function (e) { this.setData({ medName: e.detail.value, fieldErr: '' }); },
   onDose: function (e) { this.setData({ dose: e.detail.value, fieldErr: '' }); },
+
+  applyTempSlot: function (slot, snapClock) {
+    var patch = { tempSlot: slot === 'pm' ? 'pm' : 'am', fieldErr: '' };
+    if (snapClock) { patch.timeStr = slot === 'pm' ? '20:00' : '08:00'; }
+    this.setData(patch);
+    this.refreshTempHint();
+  },
+  onTempSlot: function (e) {
+    var slot = e.currentTarget.dataset.v;
+    if (slot === this.data.tempSlot) { return; }
+    this.applyTempSlot(slot, true);
+  },
+  clampTemp: function (raw) {
+    var n = parseFloat(raw);
+    if (n !== n) { return ''; }
+    n = Math.round(n * 10) / 10;
+    if (n < 34) { n = 34; }
+    if (n > 42) { n = 42; }
+    return n.toFixed(1);
+  },
+  stepTemp: function (e) {
+    var n = parseFloat(this.data.celsius);
+    if (n !== n) { n = 36.5; }
+    n += e.currentTarget.dataset.op === 'dec' ? -0.1 : 0.1;
+    this.setData({ celsius: this.clampTemp(n), fieldErr: '' });
+    this.refreshTempFever();
+  },
+  onTempInput: function (e) {
+    var raw = e.detail.value;
+    if (raw === '' || raw === '.') { this.setData({ celsius: raw, fieldErr: '' }); return; }
+    this.setData({ celsius: raw, fieldErr: '' });
+    this.refreshTempFever();
+  },
+  onTempBlur: function () {
+    var v = this.clampTemp(this.data.celsius);
+    this.setData({ celsius: v || '36.5' });
+    this.refreshTempFever();
+  },
+  refreshTempFever: function () {
+    if (this.data.seg !== 'temp') {
+      if (this.data.tempHi) { this.setData({ tempHi: false }); }
+      return;
+    }
+    var c = parseFloat(this.data.celsius);
+    var hi = (c >= 37.5);
+    if (hi !== this.data.tempHi) { this.setData({ tempHi: hi }); }
+  },
+  goMedSeg: function () {
+    this.switchSegByKey('med');
+  },
+  refreshTempHint: function () {
+    if (this.data.seg !== 'temp') {
+      if (this.data.tempHint) { this.setData({ tempHint: '' }); }
+      return;
+    }
+    var day = this.data.dateStr;
+    var slot = this.data.tempSlot;
+    var rs = storage.records();
+    var found = null;
+    for (var i = 0; i < rs.length; i++) {
+      var r = rs[i];
+      if (r.type !== 'temp' || !(r.celsius > 0)) { continue; }
+      if (T.fmtYMD(r.time) !== day) { continue; }
+      if (rowsOf.tempSlot(r) !== slot) { continue; }
+      if (this._editId && r.id === this._editId) { continue; }
+      found = r;
+      break;
+    }
+    var hint = '';
+    if (found) {
+      var when = day === T.nowYMD() ? '今天' : day.slice(5);
+      hint = when + (slot === 'pm' ? '晚测' : '早测') + '已有 ' + rowsOf.fmtC(found.celsius) + ' °C，保存会再记一笔';
+    }
+    this.setData({ tempHint: hint });
+  },
 
   /* ---------- 保存 / 删除 ---------- */
   onSave: function () {
@@ -363,6 +458,18 @@ Page({
         dose: dose,
         note: d.note
       };
+    } else if (d.seg === 'temp') {
+      var c = parseFloat(d.celsius);
+      if (!(c >= 34 && c <= 42)) {
+        this.setData({ fieldErr: 'temp' }); return;
+      }
+      rec = {
+        type: 'temp',
+        time: T.tsOf(d.dateStr, d.timeStr),
+        slot: d.tempSlot === 'pm' ? 'pm' : 'am',
+        celsius: Math.round(c * 10) / 10,
+        note: d.note
+      };
     }
 
     if (!rec) { return; }
@@ -372,7 +479,7 @@ Page({
     } else {
       storage.addRecord(rec);
     }
-    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充剂' }[d.seg];
+    var segName = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充剂', temp: '体温' }[d.seg];
     var toast = this.selectComponent('#toast');
     if (toast) { toast.show('已保存' + segName + '记录'); }
     var that = this;
@@ -384,28 +491,20 @@ Page({
 
   onDelete: function () {
     var that = this;
+    var id = this._editId;
+    if (!id) { return; }
     wx.showModal({
       title: '删除这条记录？',
-      content: '删除后不可恢复',
+      content: '删除后 4 秒内可撤销',
       confirmText: '删除',
       confirmColor: '#D93A3F',
       success: function (r) {
-        if (r.confirm && that._editId) {
-          storage.deleteRecord(that._editId);
-          that._editId = '';
-          var toast = that.selectComponent('#toast');
-          if (toast) { toast.show('已删除记录'); }
-          setTimeout(function () {
-            that.initForm(true);
-            wx.switchTab({ url: '/pages/index/index' });
-          }, 600);
-        }
+        if (!r.confirm) { return; }
+        require('../../utils/undo.js').request(that, {
+          kind: 'record', id: id, msg: '已删除记录',
+          refresh: function () { that._editId = ''; that.initForm(true); }
+        });
       }
     });
-  },
-
-  onBack: function () {
-    this.initForm();
-    wx.switchTab({ url: '/pages/index/index' });
   }
 });

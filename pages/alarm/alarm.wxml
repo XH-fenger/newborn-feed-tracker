@@ -28,4 +28,5 @@
     <view class="alarm-stop" hover-class="al-press" hover-stay-time="80" bindtap="onStop">停止</view>
   </view>
 
+  <toast id="toast" />
 </view>
