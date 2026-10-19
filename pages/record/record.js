@@ -66,6 +66,7 @@ Page({
     tempSlot: 'am',
     celsius: '36.5',
     tempHint: '',
+    tempHi: false,
     fieldErr: ''
   },
 
@@ -78,7 +79,6 @@ Page({
     var g = getApp().globalData;
     var patch = { theme: g.theme, dark: g.dark, navMeta: '今天 · ' + T.fmtCNMD(Date.now()) };
     var ic = this.buildIcons();
-    patch.icBack = ic.icBack;
     patch.icCal = ic.icCal;
     patch.icClock = ic.icClock;
     this.setData(patch);
@@ -117,11 +117,9 @@ Page({
     this.initForm();
   },
 
-  // 主题相关图标（返回箭头 / 日历 / 时钟）
   buildIcons: function () {
     var c = theme.current();
     return {
-      icBack: icons.svg('back', c.priInk, 17, 2.6),
       icCal: icons.svg('calendar', c.ink3, 17, 1.9),
       icClock: icons.svg('clock', c.ink3, 17, 1.9)
     };
@@ -215,7 +213,7 @@ Page({
     var i = e.currentTarget.dataset.i;
     if (k === this.data.seg) { return; }
     this.setData({ seg: k, segIndex: i, fieldErr: '' });
-    if (k === 'temp') { this.refreshTempHint(); }
+    if (k === 'temp') { this.refreshTempHint(); this.refreshTempFever(); }
   },
 
   /* ---------- 行内分段 ---------- */
@@ -354,15 +352,30 @@ Page({
     if (n !== n) { n = 36.5; }
     n += e.currentTarget.dataset.op === 'dec' ? -0.1 : 0.1;
     this.setData({ celsius: this.clampTemp(n), fieldErr: '' });
+    this.refreshTempFever();
   },
   onTempInput: function (e) {
     var raw = e.detail.value;
     if (raw === '' || raw === '.') { this.setData({ celsius: raw, fieldErr: '' }); return; }
     this.setData({ celsius: raw, fieldErr: '' });
+    this.refreshTempFever();
   },
   onTempBlur: function () {
     var v = this.clampTemp(this.data.celsius);
     this.setData({ celsius: v || '36.5' });
+    this.refreshTempFever();
+  },
+  refreshTempFever: function () {
+    if (this.data.seg !== 'temp') {
+      if (this.data.tempHi) { this.setData({ tempHi: false }); }
+      return;
+    }
+    var c = parseFloat(this.data.celsius);
+    var hi = (c >= 37.5);
+    if (hi !== this.data.tempHi) { this.setData({ tempHi: hi }); }
+  },
+  goMedSeg: function () {
+    this.switchSegByKey('med');
   },
   refreshTempHint: function () {
     if (this.data.seg !== 'temp') {
@@ -478,28 +491,20 @@ Page({
 
   onDelete: function () {
     var that = this;
+    var id = this._editId;
+    if (!id) { return; }
     wx.showModal({
       title: '删除这条记录？',
-      content: '删除后不可恢复',
+      content: '删除后 4 秒内可撤销',
       confirmText: '删除',
       confirmColor: '#D93A3F',
       success: function (r) {
-        if (r.confirm && that._editId) {
-          storage.deleteRecord(that._editId);
-          that._editId = '';
-          var toast = that.selectComponent('#toast');
-          if (toast) { toast.show('已删除记录'); }
-          setTimeout(function () {
-            that.initForm(true);
-            wx.switchTab({ url: '/pages/index/index' });
-          }, 600);
-        }
+        if (!r.confirm) { return; }
+        require('../../utils/undo.js').request(that, {
+          kind: 'record', id: id, msg: '已删除记录',
+          refresh: function () { that._editId = ''; that.initForm(true); }
+        });
       }
     });
-  },
-
-  onBack: function () {
-    this.initForm();
-    wx.switchTab({ url: '/pages/index/index' });
   }
 });

@@ -55,6 +55,14 @@ Page({
 
   rowOf: function (t) {
     var start = T.todayStart();
+    var meta = schedule.kindName(t.kind);
+    if (t.kind === 'vaccine' && t.dose) { meta += ' · ' + t.dose; }
+    if (t.done) {
+      meta += ' · 已接种 ' + (t.doneAt ? T.fmtMD(t.doneAt) : '');
+    } else {
+      meta += ' · ' + schedule.dueLabel(t.due);
+    }
+    if (t.note) { meta += ' · ' + t.note; }
     return {
       id: t.id,
       title: t.title,
@@ -62,8 +70,26 @@ Page({
       late: !t.done && t.due < start,
       due: T.fmtYMD(t.due),
       when: T.fmtMD(t.due),
-      meta: schedule.kindName(t.kind) + ' · ' + (t.done ? '已完成' : schedule.dueLabel(t.due)) + (t.note ? ' · ' + t.note : '')
+      dose: t.dose || '',
+      isVaccine: t.kind === 'vaccine',
+      meta: meta
     };
+  },
+
+  nextVaccine: function () {
+    var start = T.todayStart();
+    var best = null;
+    storage.todos().forEach(function (t) {
+      if (t.kind !== 'vaccine' || t.done) { return; }
+      if (!best || t.due < best.due) { best = t; }
+    });
+    if (!best) { return null; }
+    var diff = Math.round((best.due - start) / 86400000);
+    var daysText;
+    if (diff <= 0) { daysText = '已逾期 ' + (-diff) + ' 天'; }
+    else if (diff === 1) { daysText = '明天'; }
+    else { daysText = diff + ' 天后'; }
+    return { title: best.title, when: T.fmtMD(best.due), daysText: daysText };
   },
 
   refresh: function () {
@@ -88,6 +114,7 @@ Page({
       doneRows: done,
       doneCount: done.length,
       openCount: late.length + soon.length,
+      nextVaccine: this.nextVaccine(),
       openId: ''
     });
   },
@@ -230,10 +257,13 @@ Page({
   onSwipeDelete: function (e) {
     var id = e.currentTarget.dataset.id;
     if (!id) { return; }
-    storage.deleteTodo(id);
-    if (this.data.form.id === id) { this.setData({ formOpen: false }); }
-    wx.showToast({ title: '已删除', icon: 'none' });
-    this.refresh();
+    var that = this;
+    var patch = {};
+    if (this.data.form.id === id) { patch.formOpen = false; }
+    require('../../utils/undo.js').request(this, {
+      kind: 'todo', id: id, msg: '已删除待办',
+      refresh: function () { that.setData(patch); that.refresh(); }
+    });
   },
 
   onBack: function () {

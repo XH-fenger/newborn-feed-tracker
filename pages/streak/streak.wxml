@@ -1,0 +1,49 @@
+<view class="page streak-page t-{{theme}} {{dark ? 'dark' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">已坚持</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 16}}px">
+    <view class="card streak-card anim">
+      <view class="streak-hd">
+        <view class="streak-title">当前连续记录 <text class="streak-n">{{streak}}</text> 天</view>
+        <view class="streak-sub">{{goalText}}</view>
+      </view>
+      <view class="track">
+        <view class="track-line"></view>
+        <view class="track-fill" style="width:{{fillPct}}%"></view>
+        <view class="node {{startOn ? 'on' : ''}}" style="left:0"></view>
+        <view wx:for="{{marks}}" wx:key="n" class="node {{item.on ? 'on' : ''}}" style="left:{{item.left}}%">
+          <text class="node-lb">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card cal-card anim">
+      <view class="cal-hd">
+        <view class="cal-nav" hover-class="hv-si" hover-stay-time="60" bindtap="prevMonth" aria-role="button" aria-label="上个月">‹</view>
+        <text class="cal-title">{{title}}</text>
+        <view class="cal-nav {{canNext ? '' : 'off'}}" hover-class="hv-si" hover-stay-time="60" bindtap="nextMonth" aria-role="button" aria-label="下个月">›</view>
+      </view>
+      <view class="cal-week">
+        <text>日</text><text>一</text><text>二</text><text>三</text><text>四</text><text>五</text><text>六</text>
+      </view>
+      <view class="cal">
+        <view
+          wx:for="{{cells}}"
+          wx:key="key"
+          class="cell {{item.out ? 'out' : ''}} {{item.hit ? 'hit' : ''}} {{item.today ? 'is-today' : ''}}"
+        >
+          <view class="cell-in">{{item.n}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

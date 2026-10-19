@@ -1,4 +1,5 @@
-<view class="toast {{show ? 'show' : ''}}">
+<view class="toast {{show ? 'show' : ''}} {{undo ? 'undo' : ''}}">
   <image class="t-ic" src="{{icon}}" mode="aspectFit" />
   <text class="t-tx">{{msg}}</text>
+  <view wx:if="{{undo}}" class="t-undo" catchtap="onUndoTap">撤销</view>
 </view>

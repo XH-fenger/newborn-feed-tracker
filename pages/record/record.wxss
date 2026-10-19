@@ -14,3 +14,14 @@
   box-shadow: inset 0 0 0 1.5px var(--danger);
   transition: transform .18s;
 }
+
+/* 体温偏高提示 + 联动用药 */
+.fever-warn {
+  margin-top: 12px; padding: 12px; border-radius: var(--r-md);
+  background: rgba(217,58,63,.1);
+}
+.fever-warn-t { font-size: 13px; font-weight: 700; color: var(--danger); }
+.btn-med {
+  margin-top: 10px; display: inline-block; padding: 9px 16px; border-radius: 999px;
+  font-size: 13px; font-weight: 700; color: var(--priInk); background: var(--priSoft);
+}

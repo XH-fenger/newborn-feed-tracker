@@ -12,5 +12,11 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.undo { pointer-events: auto; padding-right: 12px; }
 .t-ic { width: 16px; height: 16px; flex: none; }
 .t-tx { color: #fff; }
+.t-undo {
+  margin-left: 4px; padding: 5px 13px; border-radius: 16px;
+  background: rgba(255, 255, 255, .2); color: #fff; font-weight: 700; font-size: 13px;
+}
+.t-undo:active { background: rgba(255, 255, 255, .32); }

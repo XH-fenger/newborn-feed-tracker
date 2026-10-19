@@ -6,7 +6,7 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>首页</text>
       </view>
-      <view class="nav-meta">共 {{total}} 条</view>
+      <view class="nav-mid">共 {{total}} 条</view>
     </view>
   </view>
 
@@ -62,4 +62,6 @@
     </view>
 
   </view>
+
+  <toast id="toast" />
 </view>

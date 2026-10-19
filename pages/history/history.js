@@ -130,9 +130,11 @@ Page({
   onSwipeDelete: function (e) {
     var id = e.currentTarget.dataset.id;
     if (!id) { return; }
-    storage.deleteRecord(id);
-    wx.showToast({ title: '已删除', icon: 'none' });
-    this.refresh();
+    var that = this;
+    require('../../utils/undo.js').request(this, {
+      kind: 'record', id: id, msg: '已删除记录',
+      refresh: function () { that.refresh(); }
+    });
   },
 
   onBack: function () {

@@ -15,6 +15,23 @@ function schedule(cv, fn) {
   if (cv && cv.requestAnimationFrame) { cv.requestAnimationFrame(fn); }
 }
 
+// 横轴标签过密时抽稀：放得下就每天都标，放不下则跳着标，并始终保留首尾。
+function labelIndexes(n, slot, labelWidth) {
+  if (n <= 0) { return []; }
+  if (n === 1) { return [0]; }
+  var need = Math.max(8, labelWidth) + 4;
+  var step = slot >= need ? 1 : Math.ceil(need / Math.max(slot, 1));
+  var idx = [];
+  var i;
+  for (i = 0; i < n; i += step) { idx.push(i); }
+  var last = idx[idx.length - 1];
+  if (last !== n - 1) {
+    if ((n - 1 - last) * slot < labelWidth && idx.length > 1) { idx[idx.length - 1] = n - 1; }
+    else { idx.push(n - 1); }
+  }
+  return idx;
+}
+
 function roundedRect(ctx, x, y, w, h, r) {
   if (h <= 0 || w <= 0) { return; }
   r = Math.min(r, w / 2, h / 2);
@@ -89,11 +106,20 @@ function drawBar(ctx, cv, w, h, o) {
   }
 
   function drawAxes() {
+    var fontPx = Math.round(12 * sx);
     ctx.fillStyle = o.axl;
-    ctx.font = '600 ' + Math.round(12 * sx) + 'px sans-serif';
+    ctx.font = '600 ' + fontPx + 'px sans-serif';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    var lw = 0;
     bars.forEach(function (b) {
-      ctx.fillText(b.label, b.x + barW / 2, 150 * sy);
+      if (!b.label) { return; }
+      var wdt = ctx.measureText(b.label).width;
+      if (wdt > lw) { lw = wdt; }
+    });
+    labelIndexes(bars.length, slot, lw).forEach(function (i) {
+      var b = bars[i];
+      if (b && b.label) { ctx.fillText(b.label, b.x + barW / 2, 150 * sy); }
     });
   }
 
@@ -169,10 +195,21 @@ function drawLine(ctx, cv, w, h, o) {
     ctx.setLineDash([]);
   }
   function drawAxes() {
+    var fontPx = Math.round(12 * sx);
+    var gap = n <= 1 ? (R - L) : (R - L) / (n - 1);
     ctx.fillStyle = o.axl;
-    ctx.font = '600 ' + Math.round(12 * sx) + 'px sans-serif';
+    ctx.font = '600 ' + fontPx + 'px sans-serif';
     ctx.textAlign = 'center';
-    pts.forEach(function (p, i) { ctx.fillText(p.label, xOf(i), 150 * sy); });
+    ctx.textBaseline = 'alphabetic';
+    var lw = 0;
+    pts.forEach(function (p) {
+      if (!p.label) { return; }
+      var wdt = ctx.measureText(p.label).width;
+      if (wdt > lw) { lw = wdt; }
+    });
+    labelIndexes(n, gap, lw).forEach(function (i) {
+      if (pts[i] && pts[i].label) { ctx.fillText(pts[i].label, xOf(i), 150 * sy); }
+    });
   }
 
   var seq = ++animSeq;
@@ -229,4 +266,102 @@ function drawLine(ctx, cv, w, h, o) {
   else { t0 = Date.now() - 800; frame(); }
 }
 
-module.exports = { setupCanvas: setupCanvas, drawBar: drawBar, drawLine: drawLine, rgbaOf: rgbaOf };
+/* ---------- 成长对照图：WHO 百分位参考线 + 宝宝实测折线 ---------- */
+// o: { babyPoints:[{m,v}], who:[{m,p3,p15,p50,p85,p97}], color, grid, axl, card, maxMonths, xLabels:[{m,t}] }
+function drawGrowth(ctx, cv, w, h, o) {
+  var sx = w / 320, sy = h / 158;
+  var L = 34 * sx, R = w - 14 * sx;
+  var base = 132.5 * sy, top = 22 * sy;
+  var baby = o.babyPoints || [];
+  var who = o.who || [];
+  var maxM = o.maxMonths || 24;
+
+  var allV = [];
+  who.forEach(function (p) { if (p.p3 != null) { allV.push(p.p3, p.p97); } });
+  baby.forEach(function (p) { if (p.v != null) { allV.push(p.v); } });
+  if (!allV.length) { allV = [0, 1]; }
+  var minV = Math.min.apply(null, allV);
+  var maxV = Math.max.apply(null, allV);
+  var pad = (maxV - minV) * 0.15; if (!(pad > 0)) { pad = 1; }
+  minV -= pad; maxV += pad;
+
+  function xOf(m) { return L + (R - L) * (Math.max(0, Math.min(maxM, m)) / maxM); }
+  function yOf(v) { return base - ((v - minV) / (maxV - minV)) * (base - top); }
+
+  function grid() {
+    var ys = [base, 92.5 * sy, 52.5 * sy];
+    ys.forEach(function (y, i) {
+      ctx.strokeStyle = o.grid; ctx.lineWidth = 1;
+      ctx.setLineDash(i === 0 ? [] : [3, 5]);
+      ctx.beginPath(); ctx.moveTo(L, y + .5); ctx.lineTo(R, y + .5); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+  }
+  function axes() {
+    ctx.fillStyle = o.axl; ctx.font = '600 ' + Math.round(11 * sx) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    (o.xLabels || []).forEach(function (lb) { ctx.fillText(lb.t, xOf(lb.m), 150 * sy); });
+  }
+  function poly(getter, color, width, dash) {
+    if (who.length < 2) { return; }
+    ctx.strokeStyle = color; ctx.lineWidth = width * sx; ctx.lineJoin = 'round';
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    who.forEach(function (p, i) {
+      var x = xOf(p.m), y = yOf(getter(p));
+      if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  var seq = ++animSeq;
+  var t0 = 0;
+  function frame() {
+    if (seq !== animSeq) { return; }
+    var now = Date.now();
+    if (!t0) { t0 = now; }
+    var p = Math.min(1, (now - t0) / 700);
+    var eased = 1 - Math.pow(1 - p, 3);
+    var cutX = L + (R - L) * eased;
+    try {
+      ctx.clearRect(0, 0, w, h);
+      grid();
+      poly(function (pp) { return pp.p3; }, rgbaOf(o.color, .32), 1, [4, 4]);
+      poly(function (pp) { return pp.p97; }, rgbaOf(o.color, .32), 1, [4, 4]);
+      poly(function (pp) { return pp.p50; }, rgbaOf(o.color, .6), 1.6, [2, 3]);
+      if (baby.length) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, 0, cutX, h); ctx.clip();
+        ctx.beginPath();
+        ctx.moveTo(xOf(baby[0].m), base);
+        baby.forEach(function (pt) { ctx.lineTo(xOf(pt.m), yOf(pt.v)); });
+        ctx.lineTo(xOf(baby[baby.length - 1].m), base);
+        ctx.closePath();
+        ctx.fillStyle = rgbaOf(o.color, .18 * p); ctx.fill();
+        ctx.beginPath();
+        baby.forEach(function (pt, i) {
+          var x = xOf(pt.m), y = yOf(pt.v);
+          if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+        });
+        ctx.strokeStyle = o.color; ctx.lineWidth = 3 * sx; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+        ctx.restore();
+        baby.forEach(function (pt) {
+          var x = xOf(pt.m);
+          if (x > cutX + 1) { return; }
+          ctx.beginPath();
+          ctx.arc(x, yOf(pt.v), 4 * sx, 0, Math.PI * 2);
+          ctx.fillStyle = o.card; ctx.fill();
+          ctx.lineWidth = 2.6 * sx; ctx.strokeStyle = o.color; ctx.stroke();
+        });
+      }
+      axes();
+    } catch (e) { return; }
+    if (p < 1) { schedule(cv, frame); }
+  }
+  if (motion.reduced()) { t0 = Date.now() - 700; frame(); return; }
+  if (cv && cv.requestAnimationFrame) { cv.requestAnimationFrame(frame); }
+  else { t0 = Date.now() - 700; frame(); }
+}
+
+module.exports = { setupCanvas: setupCanvas, drawBar: drawBar, drawLine: drawLine, drawGrowth: drawGrowth, rgbaOf: rgbaOf };

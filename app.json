@@ -7,12 +7,16 @@
     "pages/history/history",
     "pages/baby/baby",
     "pages/alarm/alarm",
-    "pages/todo/todo"
+    "pages/todo/todo",
+    "pages/streak/streak"
   ],
   "window": {
     "navigationStyle": "custom",
     "backgroundColor": "#F4F6FC",
     "backgroundTextStyle": "dark"
+  },
+  "usingComponents": {
+    "toast": "/components/toast/toast"
   },
   "tabBar": {
     "custom": true,

@@ -121,10 +121,42 @@ Page({
     var todo = this.buildTodoPreview();
     patch.todoPreview = todo.preview;
     patch.todoMore = todo.more;
+    patch.vacCard = this.nextVaccine();
+    patch.fever = this.feverInfo(records);
     this.setData(patch);
     this._interval = s.feedInterval;
     this._lastFeed = lf;
     this.refreshNext();
+  },
+
+  nextVaccine: function () {
+    var start = T.todayStart();
+    var best = null;
+    storage.todos().forEach(function (t) {
+      if (t.kind !== 'vaccine' || t.done) { return; }
+      if (!best || t.due < best.due) { best = t; }
+    });
+    if (!best) { return null; }
+    var diff = Math.round((best.due - start) / 86400000);
+    var daysText;
+    if (diff <= 0) { daysText = '已逾期 ' + (-diff) + ' 天'; }
+    else if (diff === 1) { daysText = '明天'; }
+    else { daysText = diff + ' 天后'; }
+    return { title: best.title, when: T.fmtMD(best.due), daysText: daysText };
+  },
+
+  feverInfo: function (records) {
+    var t = stats.todayTempView(records);
+    if (t.am && t.am.hi) { return { slot: 'am' }; }
+    if (t.pm && t.pm.hi) { return { slot: 'pm' }; }
+    return null;
+  },
+
+  goMed: function () {
+    var app = getApp();
+    app.globalData.pendingType = 'med';
+    app.globalData.pendingSlot = '';
+    wx.switchTab({ url: '/pages/record/record' });
   },
 
   // 最近记录行（iconKey + icBg → 渲染时查 data.ic / CSS 变量，主题切换自动生效）
@@ -171,6 +203,12 @@ Page({
     if (toast) { toast.show(n + ' 件待办到了或已逾期'); }
   },
 
+  // 夜间（22:00–07:00）自动放宽喂养间隔，减少半夜误触闹钟
+  isNight: function () {
+    var h = new Date().getHours();
+    return h < 7 || h >= 22;
+  },
+
   // 距上次喂养（供 ticker 每分钟轻量刷新）
   refreshNext: function () {
     var lf = this._lastFeed;
@@ -179,7 +217,8 @@ Page({
       this.drawRing(0);
       return;
     }
-    var interval = this._interval || 180;
+    var s = storage.settings();
+    var interval = this.isNight() ? (s.nightFeedInterval || 240) : (s.feedInterval || 180);
     var sinceMin = Math.max(0, Math.round((Date.now() - lf.time) / 60000));
     var nextTs = lf.time + interval * 60000;
     var patch = {
@@ -272,7 +311,8 @@ Page({
     if (now < (s.alarmSnoozeUntil || 0)) { return; }
     // 用户点过「停止」：同一次喂养 1 小时内不再弹
     if (s.alarmDismissAt && s.alarmFeedId === lf.id && (now - s.alarmDismissAt) < 3600000) { return; }
-    if ((now - lf.time) >= (s.feedInterval || 180) * 60000) {
+    var interval = this.isNight() ? (s.nightFeedInterval || 240) : (s.feedInterval || 180);
+    if ((now - lf.time) >= interval * 60000) {
       wx.navigateTo({ url: '/pages/alarm/alarm' });
     }
   },
@@ -318,9 +358,11 @@ Page({
   onSwipeDelete: function (e) {
     var id = e.currentTarget.dataset.id;
     if (!id) { return; }
-    storage.deleteRecord(id);
-    wx.showToast({ title: '已删除', icon: 'none' });
-    this.refresh();
+    var that = this;
+    require('../../utils/undo.js').request(this, {
+      kind: 'record', id: id, msg: '已删除记录',
+      refresh: function () { that.refresh(); }
+    });
   },
   onNextTap: function () {
     if (!this.data.hasFeed) { this.goAdd(); }

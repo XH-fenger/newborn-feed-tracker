@@ -43,7 +43,7 @@ page {
 }
 .nav.sc::after { opacity: 1; }
 .nav.sc { background: rgba(var(--bgRgb), .94); }
-.nav-row { display: flex; align-items: center; gap: 9px; min-height: 44px; }
+.nav-row { position: relative; display: flex; align-items: center; gap: 9px; min-height: 44px; }
 .nav-row-pad { padding-right: 96px; } /* 避让右上角胶囊按钮 */
 .nav-back {
   display: flex; align-items: center; gap: 1px;
@@ -53,6 +53,15 @@ page {
 .nav-back-ic { width: 17px; height: 17px; flex: none; }
 .nav-t { font-size: 16.5px; font-weight: 600; letter-spacing: -.1px; line-height: 1.2; color: var(--ink); }
 .nav-meta { margin-left: auto; font-size: 12.5px; color: var(--ink3); font-weight: 500; flex: none; }
+.nav-mid {
+  position: absolute; left: 50%; top: 0; bottom: 0;
+  transform: translateX(-50%);
+  display: flex; align-items: center; justify-content: center;
+  max-width: 54%;
+  font-size: 12.5px; color: var(--ink3); font-weight: 500;
+  pointer-events: none; white-space: nowrap;
+}
+.nav-mid-title { font-size: 16.5px; font-weight: 600; color: var(--ink); }
 .nav-back-ic-w { margin-left: auto; }
 
 .nav.nav-blank {
@@ -97,8 +106,13 @@ page {
   background: radial-gradient(circle, rgba(255, 255, 255, .26), transparent 68%); }
 .hero::after { width: 170px; height: 170px; left: -70px; bottom: -40px;
   background: radial-gradient(circle, rgba(255, 255, 255, .16), transparent 70%); }
-.hero-nav { box-sizing: border-box; display: flex; align-items: center; padding-left: 22px; }
-.hero-top { position: relative; flex: 1; height: 100%; display: flex; align-items: center; justify-content: space-between; }
+.hero-nav { position: relative; box-sizing: border-box; display: flex; align-items: center; padding-left: 22px; }
+.hero-top { position: relative; flex: 1; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
+.daychip-slot {
+  position: absolute; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 1;
+}
 .daychip {
   display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 13px;
   border-radius: 16px; background: rgba(255, 255, 255, .22); color: #fff;
@@ -371,6 +385,7 @@ page {
 .profile-stats::before { content: ""; position: absolute; top: 0; left: 18px; right: 18px;
   height: 1px; background: rgba(255, 255, 255, .24); }
 .pstat { flex: 1; min-width: 0; text-align: center; }
+.pstat.hv-pstat { opacity: .72; }
 .pstat + .pstat { border-left: 1px solid rgba(255, 255, 255, .24); }
 .pstat b { display: block; font-size: 19px; font-weight: 800; color: #fff;
   letter-spacing: -.6px; line-height: 1.1; font-variant-numeric: tabular-nums; }

@@ -14,7 +14,9 @@ Page({
     name: '',
     gender: 'M',
     birthday: '',
-    birthWeight: ''
+    birthWeight: '',
+    birthHeight: '',
+    birthHead: ''
   },
 
   onLoad: function () {
@@ -24,7 +26,9 @@ Page({
       name: baby.name || '',
       gender: baby.gender || 'M',
       birthday: baby.birthday || T.nowYMD(),
-      birthWeight: baby.birthWeight > 0 ? String(baby.birthWeight) : ''
+      birthWeight: baby.birthWeight > 0 ? String(baby.birthWeight) : '',
+      birthHeight: baby.birthHeight > 0 ? String(baby.birthHeight) : '',
+      birthHead: baby.birthHead > 0 ? String(baby.birthHead) : ''
     });
   },
 
@@ -52,6 +56,8 @@ Page({
   },
   onBirthday: function (e) { this.setData({ birthday: e.detail.value }); },
   onWeight: function (e) { this.setData({ birthWeight: e.detail.value }); },
+  onHeight: function (e) { this.setData({ birthHeight: e.detail.value }); },
+  onHead: function (e) { this.setData({ birthHead: e.detail.value }); },
 
   onSave: function () {
     var d = this.data;
@@ -62,11 +68,21 @@ Page({
     if (d.birthWeight && !(w > 0 && w < 10)) {
       wx.showToast({ title: '出生体重请在 0-10 kg 之间', icon: 'none' }); return;
     }
+    var h = parseFloat(d.birthHeight);
+    if (d.birthHeight && !(h > 0 && h < 120)) {
+      wx.showToast({ title: '出生身高请在 0-120 cm 之间', icon: 'none' }); return;
+    }
+    var hd = parseFloat(d.birthHead);
+    if (d.birthHead && !(hd > 0 && hd < 80)) {
+      wx.showToast({ title: '出生头围请在 0-80 cm 之间', icon: 'none' }); return;
+    }
     storage.saveBaby({
       name: name,
       gender: d.gender,
       birthday: d.birthday,
-      birthWeight: w > 0 ? Math.round(w * 100) / 100 : ''
+      birthWeight: w > 0 ? Math.round(w * 100) / 100 : '',
+      birthHeight: h > 0 ? Math.round(h * 10) / 10 : '',
+      birthHead: hd > 0 ? Math.round(hd * 10) / 10 : ''
     });
     var toast = this.selectComponent('#toast');
     if (toast) { toast.show('已保存宝宝资料'); }

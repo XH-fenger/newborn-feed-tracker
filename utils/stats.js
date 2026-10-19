@@ -141,8 +141,50 @@ function mineStats(records, birthday) {
   return { count: count, days: span, daily: daily };
 }
 
+function dayStart(ts) {
+  var d = new Date(ts);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+// 自定义区间每日聚合（含 startTs 当天至 endTs 当天）
+function dailyAggBetween(records, startTs, endTs) {
+  var s = dayStart(startTs);
+  var e = dayStart(endTs);
+  var days = [];
+  var cur = s;
+  while (cur <= e) {
+    days.push({ ts: cur, feedCount: 0, feedMl: 0, diaper: 0, sleepMin: 0 });
+    cur += 86400000;
+  }
+  if (!days.length) { return days; }
+  var idx = {};
+  days.forEach(function (d, i) { idx[T.dayKey(d.ts)] = i; });
+  records.forEach(function (r) {
+    var i = idx[T.dayKey(r.time)];
+    if (i === undefined) { return; }
+    if (r.type === 'feed') { days[i].feedCount++; if (r.amount > 0) { days[i].feedMl += r.amount; } }
+    else if (r.type === 'diaper') { days[i].diaper++; }
+    else if (r.type === 'sleep') { if (r.duration > 0) { days[i].sleepMin += r.duration; } }
+  });
+  return days;
+}
+
+// 成长序列（按指标）：weight / height / headCirc，含出生值
+function growthSeriesMetric(records, metric, birthValue) {
+  var key = metric === 'height' ? 'height' : (metric === 'head' ? 'headCirc' : 'weight');
+  var gs = records.filter(function (r) { return r.type === 'growth' && r[key] > 0; });
+  gs.sort(function (a, b) { return a.time - b.time; });
+  var out = [];
+  if (birthValue > 0) { out.push({ label: '出生', v: birthValue, time: 0, key: 'birth' }); }
+  gs.forEach(function (r) {
+    out.push({ label: '第 ' + out.length + ' 次', v: r[key], time: r.time, key: r.id });
+  });
+  return out;
+}
+
 module.exports = {
   todayStats: todayStats, todayTemp: todayTemp, todayTempView: todayTempView, tempDays: tempDays,
   lastFeed: lastFeed, lastN: lastN,
-  dailyAgg: dailyAgg, avg: avg, growthSeries: growthSeries, mineStats: mineStats
+  dailyAgg: dailyAgg, dailyAggBetween: dailyAggBetween, avg: avg,
+  growthSeries: growthSeries, growthSeriesMetric: growthSeriesMetric, mineStats: mineStats
 };

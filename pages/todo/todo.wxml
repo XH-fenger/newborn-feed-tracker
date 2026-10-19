@@ -6,7 +6,7 @@
         <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
         <text>返回</text>
       </view>
-      <view class="nav-meta">{{openCount}} 件未完成</view>
+      <view class="nav-mid">{{openCount}} 件未完成</view>
     </view>
   </view>
 
@@ -17,6 +17,15 @@
       <view class="todo-ghost" hover-class="hv-ghost" hover-stay-time="80" bindtap="onDraft">生成日程</view>
     </view>
     <view class="todo-hint" wx:if="{{openCount || doneCount}}">点右侧日期可直接改期，点事项可改名称和备注</view>
+
+    <view class="vac-banner anim" wx:if="{{nextVaccine}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goDraft">
+      <view class="vac-ic">💉</view>
+      <view class="vac-b">
+        <view class="vac-t">距下次接种 · <text class="vac-n">{{nextVaccine.daysText}}</text></view>
+        <view class="vac-s">{{nextVaccine.title}} · {{nextVaccine.when}}</view>
+      </view>
+      <text class="chev">›</text>
+    </view>
 
     <view class="card anim" wx:if="{{formOpen}}" style="margin-top:14px">
       <view class="fld">
@@ -79,7 +88,9 @@
                 </view>
               </view>
               <view class="rbody" data-id="{{item.id}}" bindtap="onRowTap">
-                <view class="rt {{item.done ? 'done' : ''}}">{{item.title}}</view>
+                <view class="rt {{item.done ? 'done' : ''}}">
+                  <text wx:if="{{item.isVaccine && item.dose}}" class="vac-tag">{{item.dose}}</text>{{item.title}}
+                </view>
                 <view class="rd">{{item.meta}}</view>
               </view>
               <picker mode="date" value="{{item.due}}" data-id="{{item.id}}" bindchange="onRowDue">

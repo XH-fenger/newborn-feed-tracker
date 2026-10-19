@@ -2,11 +2,7 @@
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
-      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
-        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
-        <text>首页</text>
-      </view>
-      <view class="nav-meta">{{navMeta}}</view>
+      <view class="nav-mid">{{navMeta}}</view>
     </view>
   </view>
 
@@ -290,6 +286,10 @@
           <view class="fhint" style="margin-top:8px">常见腋温大约 36.0–37.4 °C，达到 37.5 °C 会标为偏高</view>
           <view class="ferr" wx:if="{{fieldErr === 'temp'}}">请填写 34.0–42.0 之间的体温</view>
           <view class="fhint" wx:if="{{tempHint}}">{{tempHint}}</view>
+          <view class="fever-warn" wx:if="{{tempHi}}">
+            <view class="fever-warn-t">⚠️ 体温偏高（≥37.5°C），建议同时记录用药</view>
+            <view class="btn-med" hover-class="hv-pill" hover-stay-time="80" bindtap="goMedSeg">同时记录用药</view>
+          </view>
         </view>
         <view class="fld">
           <view class="flabel">记录时间</view>

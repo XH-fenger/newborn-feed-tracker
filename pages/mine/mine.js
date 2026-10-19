@@ -4,6 +4,7 @@ var statsMod = require('../../utils/stats.js');
 var theme = require('../../utils/theme.js');
 var icons = require('../../utils/icons.js');
 var exporter = require('../../utils/export.js');
+var share = require('../../utils/share.js');
 var T = require('../../utils/time.js');
 
 var THEME_LIST = [
@@ -14,6 +15,8 @@ var THEME_LIST = [
 ];
 var INTERVAL_OPTS = [90, 120, 150, 180, 210, 240];
 var INTERVAL_TXT = ['1.5 小时', '2 小时', '2.5 小时', '3 小时', '3.5 小时', '4 小时'];
+var NIGHT_OPTS = [180, 210, 240, 300, 360, 420];
+var NIGHT_TXT = ['3 小时', '3.5 小时', '4 小时', '5 小时', '6 小时', '7 小时'];
 
 Page({
   data: {
@@ -29,6 +32,8 @@ Page({
     reminderEnabled: true,
     intervalH: 3,
     intervalTxt: '3 小时',
+    nightIntervalH: 4,
+    nightIntervalTxt: '4 小时',
     todoOpen: 0
   },
 
@@ -97,11 +102,14 @@ Page({
     var gender = baby.gender === 'F' ? '女宝' : '男宝';
     var meta = gender + (baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : ' · 待完善资料');
     var itv = s.feedInterval || 180;
+    var niv = s.nightFeedInterval || 240;
     this.setData({
       profile: { name: baby.name || '宝宝', meta: meta, count: ms.count, days: ms.days, daily: ms.daily },
       reminderEnabled: !!s.reminderEnabled,
       intervalH: Math.round(itv / 60),
       intervalTxt: (Math.round(itv / 60 * 10) / 10) + ' 小时',
+      nightIntervalH: Math.round(niv / 60),
+      nightIntervalTxt: (Math.round(niv / 60 * 10) / 10) + ' 小时',
       todoOpen: storage.todos().filter(function (t) { return !t.done; }).length
     });
   },
@@ -109,6 +117,10 @@ Page({
   /* ---------- 资料头卡 ---------- */
   goBaby: function () {
     wx.navigateTo({ url: '/pages/baby/baby' });
+  },
+
+  goStreak: function () {
+    wx.navigateTo({ url: '/pages/streak/streak' });
   },
 
   /* ---------- 提醒 ---------- */
@@ -132,6 +144,21 @@ Page({
       }
     });
   },
+  pickNightInterval: function () {
+    var that = this;
+    var cur = (storage.settings().nightFeedInterval || 240) / 60;
+    var txts = NIGHT_TXT.map(function (t, i) {
+      return NIGHT_OPTS[i] / 60 === cur ? t + '（当前）' : t;
+    });
+    wx.showActionSheet({
+      itemList: txts,
+      success: function (r) {
+        var v = NIGHT_OPTS[r.tapIndex];
+        storage.saveSetting('nightFeedInterval', v);
+        that.setData({ nightIntervalH: v / 60, nightIntervalTxt: (v / 60) + ' 小时' });
+      }
+    });
+  },
   goTodo: function () {
     wx.navigateTo({ url: '/pages/todo/todo' });
   },
@@ -150,6 +177,29 @@ Page({
   /* ---------- 数据 ---------- */
   doExport: function () {
     exporter.exportData();
+  },
+  doExportCsv: function () {
+    exporter.exportCsv();
+  },
+  doShare: function () {
+    var that = this;
+    wx.showActionSheet({
+      itemList: ['今日摘要', '近 7 天摘要'],
+      success: function (r) {
+        if (that._sharing) { return; }
+        that._sharing = true;
+        that.setData({ sharing: true });
+        var data = r.tapIndex === 1 ? share.weeklyData() : share.dailyData();
+        // 不用原生 showLoading/hideLoading（与原生 toast 冲突会卡出残影），用按钮状态代替
+        share.share(data, function (err) {
+          that._sharing = false;
+          that.setData({ sharing: false });
+          var msg = err ? ((err && err.errMsg) || '生成失败') : '已生成摘要';
+          var toast = that.selectComponent('#toast');
+          if (toast) { toast.show(msg); }
+        });
+      }
+    });
   },
   doImport: function () {
     var that = this;
