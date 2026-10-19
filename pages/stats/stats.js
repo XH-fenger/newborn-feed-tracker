@@ -49,7 +49,9 @@ Page({
     growthMetric: 'weight',
     growthWho: [],
     growthShowWho: false,
-    growthMaxM: 24
+    growthMaxM: 24,
+    cmp: { has: false, n: 0, items: [] },
+    cmpOpen: false
   },
 
   onLoad: function () {
@@ -264,12 +266,37 @@ Page({
     };
 
     var chartRows = { feed: feed.rows, diaper: diaper.rows, sleep: sleep.rows, growth: growth.rows, temp: temp.points }[this.data.seg] || [];
+
+    /* —— 环比：较上一等长周期 —— */
+    var cmpRaw = statsMod.comparePeriods(records, days[0].ts, days[days.length - 1].ts);
+    var cmp = { has: false, n: 0, items: [] };
+    if (cmpRaw.has) {
+      function chip(k, pct, curTxt, prevTxt, segKey) {
+        var dir = 'flat', txt = '持平';
+        if (pct === null) { dir = 'up'; txt = '新增'; }
+        else if (pct > 0) { dir = 'up'; txt = '↑ ' + pct + '%'; }
+        else if (pct < 0) { dir = 'down'; txt = '↓ ' + Math.abs(pct) + '%'; }
+        return { k: k, seg: segKey, dir: dir, txt: txt, cur: curTxt, prev: prevTxt };
+      }
+      cmp = {
+        has: true, n: cmpRaw.n,
+        items: [
+          chip('日均奶量', cmpRaw.pct.ml, cmpRaw.avgCur.ml + ' ml', cmpRaw.avgPrev.ml + ' ml', 'feed'),
+          chip('日均喂养', cmpRaw.pct.feed, cmpRaw.avgCur.feed + ' 次', cmpRaw.avgPrev.feed + ' 次', 'feed'),
+          chip('日均尿布', cmpRaw.pct.diaper, cmpRaw.avgCur.diaper + ' 次', cmpRaw.avgPrev.diaper + ' 次', 'diaper'),
+          chip('日均睡眠', cmpRaw.pct.sleep, cmpRaw.avgCur.sleepH + ' h', cmpRaw.avgPrev.sleepH + ' h', 'sleep')
+        ]
+      };
+    }
+
+    var that = this;
     this.setData({
       navMeta: navMeta, feed: feed, diaper: diaper, sleep: sleep, growth: growth, temp: temp, chartRows: chartRows,
-      growthWho: whoCurve, growthShowWho: inRng
+      growthWho: whoCurve, growthShowWho: inRng, cmp: cmp
+    }, function () {
+      if (that.data.dayOn && that.data.dayKey) { that.openDay(that.data.dayKey); }
+      setTimeout(function () { that.drawChart(); }, 40);
     });
-    if (this.data.dayOn && this.data.dayKey) { this.openDay(this.data.dayKey); }
-    this.drawChart();
   },
 
   /* ---------- 区间切换（#6） ---------- */
@@ -309,6 +336,20 @@ Page({
     this.refresh();
     var that = this;
     setTimeout(function () { that.drawChart(); }, 60);
+  },
+
+  toggleCmp: function () {
+    this.setData({ cmpOpen: !this.data.cmpOpen });
+  },
+
+  onCmpTap: function (e) {
+    var k = e.currentTarget.dataset.k;
+    var i = -1;
+    for (var n = 0; n < SEGS.length; n++) {
+      if (SEGS[n].k === k) { i = n; break; }
+    }
+    if (i < 0 || k === this.data.seg) { return; }
+    this.onSegTap({ currentTarget: { dataset: { k: k, i: i } } });
   },
 
   onSegTap: function (e) {
@@ -397,9 +438,18 @@ Page({
   genShare: function () {
     var that = this;
     if (this._sharing) { return; }
+    wx.showActionSheet({
+      itemList: ['今日摘要', '近 7 天周报', '近 30 天月报'],
+      success: function (r) { that.doShareIndex(r.tapIndex); }
+    });
+  },
+  doShareIndex: function (idx) {
+    var that = this;
+    if (this._sharing) { return; }
     this._sharing = true;
     this.setData({ sharing: true });
-    share.share(share.dailyData(), function (err) {
+    var data = idx === 2 ? share.reportData(30) : (idx === 1 ? share.reportData(7) : share.dailyData());
+    share.share(data, function (err) {
       that._sharing = false;
       that.setData({ sharing: false });
       var msg = err ? ((err && err.errMsg) || '生成失败') : '已生成摘要';

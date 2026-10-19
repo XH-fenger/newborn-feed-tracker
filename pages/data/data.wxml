@@ -38,8 +38,8 @@
           <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
         </view>
         <view class="rbody">
-          <view class="rt">分享摘要</view>
-          <view class="rd">{{sharing ? '正在生成…' : '生成图文卡片，可发给家人 / 医生'}}</view>
+          <view class="rt">分享摘要 / 长图</view>
+          <view class="rd">{{sharing ? '正在生成…' : '今日卡片、7 天周报、30 天月报'}}</view>
         </view>
         <text class="chev">›</text>
       </view>

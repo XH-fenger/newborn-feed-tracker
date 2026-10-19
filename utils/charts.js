@@ -58,6 +58,9 @@ function setupCanvas(page, id, cb) {
     try { dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2; } catch (e) { }
     var w = res[0].width || 320;
     var h = res[0].height || 158;
+    // scroll-view 里 canvas 的测量高度会膨胀成整段滚动区，柱子被拉没
+    if (!(h >= 120 && h <= 200)) { h = 158; }
+    if (!(w >= 200 && w <= 520)) { w = 320; }
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
     var ctx = cv.getContext('2d');

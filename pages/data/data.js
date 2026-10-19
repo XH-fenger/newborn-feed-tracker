@@ -67,13 +67,17 @@ Page({
 
   doShare: function () {
     var that = this;
+    if (this._sharing) { return; }
     wx.showActionSheet({
-      itemList: ['今日摘要', '近 7 天摘要'],
+      itemList: ['今日摘要', '近 7 天周报', '近 30 天月报'],
       success: function (r) {
         if (that._sharing) { return; }
         that._sharing = true;
         that.setData({ sharing: true });
-        var data = r.tapIndex === 1 ? share.weeklyData() : share.dailyData();
+        var data;
+        if (r.tapIndex === 2) { data = share.reportData(30); }
+        else if (r.tapIndex === 1) { data = share.reportData(7); }
+        else { data = share.dailyData(); }
         share.share(data, function (err) {
           that._sharing = false;
           that.setData({ sharing: false });

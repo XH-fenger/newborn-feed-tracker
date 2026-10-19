@@ -20,6 +20,22 @@
       >{{item.t}}</view>
     </view>
 
+    <!-- 同上一次（一键重复） -->
+    <view
+      class="rep anim"
+      wx:if="{{repeatLabel && !editing && seg !== 'growth'}}"
+      hover-class="hv-sec" hover-stay-time="80"
+      bindtap="onRepeat"
+      aria-role="button" aria-label="按上一次的内容再记一条"
+    >
+      <view class="rep-ic">↻</view>
+      <view class="rep-body">
+        <view class="rep-k">同上一次</view>
+        <view class="rep-v">{{repeatLabel}}</view>
+      </view>
+      <view class="rep-go">再记一条 ›</view>
+    </view>
+
     <!-- ============ 喂养 ============ -->
     <block wx:if="{{seg === 'feed'}}">
       <view class="card anim" style="margin-top:14px">

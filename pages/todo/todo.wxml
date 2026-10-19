@@ -18,7 +18,7 @@
     </view>
     <view class="todo-hint" wx:if="{{openCount || doneCount}}">点右侧日期可直接改期，点事项可改名称和备注</view>
 
-    <view class="vac-banner anim" wx:if="{{nextVaccine}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goDraft">
+    <view class="vac-banner anim" wx:if="{{nextVaccine}}" hover-class="hv-cell" hover-stay-time="80" data-id="{{nextVaccine.id}}" bindtap="onRowTap">
       <view class="vac-ic">💉</view>
       <view class="vac-b">
         <view class="vac-t">距下次接种 · <text class="vac-n">{{nextVaccine.daysText}}</text></view>

@@ -8,6 +8,7 @@ var schedule = require('../../utils/schedule.js');
 var motion = require('../../utils/motion.js');
 
 var rowsOf = require('../../utils/recordRow.js');
+var repeat = require('../../utils/repeat.js');
 
 Page({
   data: {
@@ -116,6 +117,7 @@ Page({
       },
       todayTemp: stats.todayTempView(records),
       hasFeed: !!lf,
+      repeatLabel: lf ? repeat.label(lf) : '',
       rows: this.buildRows(records.slice(0, 3)),
       empty: records.length === 0,
       openId: ''
@@ -397,6 +399,23 @@ Page({
       refresh: function () { that.refresh(); }
     });
   },
+  // 一键重复上一次喂养（#1）
+  onRepeatFeed: function () {
+    // 防连点：同一时刻重复点击会连写两条一样的记录
+    if (this._repeating) { return; }
+    var lf = this._lastFeed;
+    if (!lf) { return; }
+    var rec = repeat.build(lf, Date.now());
+    if (!rec) { return; }
+    var that = this;
+    this._repeating = true;
+    setTimeout(function () { that._repeating = false; }, 800);
+    storage.addRecord(rec);
+    var toast = this.selectComponent('#toast');
+    if (toast) { toast.show('已按上次记一条喂养'); }
+    this.refresh();
+  },
+
   onNextTap: function () {
     if (!this.data.hasFeed) { this.goAdd(); }
   },

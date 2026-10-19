@@ -15,6 +15,7 @@ var SEGS = [
 ];
 
 var rowsOf = require('../../utils/recordRow.js');
+var repeat = require('../../utils/repeat.js');
 var MEDS = rowsOf.MEDS;
 var DOSE_PH = {
   k1: '如 1 滴',
@@ -69,6 +70,7 @@ Page({
     tempHint: '',
     tempHi: false,
     bathMin: 10,
+    repeatLabel: '',
     fieldErr: ''
   },
 
@@ -112,6 +114,7 @@ Page({
         app.globalData.pendingSlot = '';
       }
     }
+    this.refreshRepeat();
   },
 
   onHide: function () {
@@ -156,6 +159,7 @@ Page({
       fieldErr: ''
     });
     this.stopTimer(true);
+    this.refreshRepeat();
   },
 
   // —— 编辑模式：载入既有记录 ——
@@ -219,6 +223,40 @@ Page({
     if (k === this.data.seg) { return; }
     this.setData({ seg: k, segIndex: i, fieldErr: '' });
     if (k === 'temp') { this.refreshTempHint(); this.refreshTempFever(); }
+    this.refreshRepeat();
+  },
+
+  /* ---------- 同上一次（#1） ---------- */
+  refreshRepeat: function () {
+    var seg = this.data.seg;
+    var last = seg === 'growth' ? null : repeat.lastOf(storage.records(), seg);
+    var txt = last ? repeat.label(last) : '';
+    if (txt !== this.data.repeatLabel) { this.setData({ repeatLabel: txt }); }
+  },
+  onRepeat: function () {
+    if (this.data.editing) { return; }
+    // 防连点：跳转前 600ms 内的重复点击会连写多条一样的记录
+    if (this._repeating) { return; }
+    var seg = this.data.seg;
+    var last = repeat.lastOf(storage.records(), seg);
+    if (!last) {
+      var t0 = this.selectComponent('#toast');
+      if (t0) { t0.show('还没有可重复的记录'); }
+      return;
+    }
+    var rec = repeat.build(last, Date.now());
+    if (!rec) { return; }
+    var that = this;
+    this._repeating = true;
+    setTimeout(function () { that._repeating = false; }, 1200);
+    if (this.data.timing) { this.stopTimer(true); }
+    storage.addRecord(rec);
+    var toast = this.selectComponent('#toast');
+    if (toast) { toast.show('已按上次记一条' + repeat.segName(seg)); }
+    setTimeout(function () {
+      that.initForm(true);
+      wx.switchTab({ url: '/pages/index/index' });
+    }, 600);
   },
 
   /* ---------- 行内分段 ---------- */

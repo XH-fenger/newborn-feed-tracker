@@ -89,7 +89,7 @@ Page({
     if (diff <= 0) { daysText = '已逾期 ' + (-diff) + ' 天'; }
     else if (diff === 1) { daysText = '明天'; }
     else { daysText = diff + ' 天后'; }
-    return { title: best.title, when: T.fmtMD(best.due), daysText: daysText };
+    return { id: best.id, title: best.title, when: T.fmtMD(best.due), daysText: daysText };
   },
 
   refresh: function () {

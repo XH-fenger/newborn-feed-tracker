@@ -35,6 +35,21 @@
       </view>
     </view>
 
+    <!-- ============ 环比（较上一周期） ============ -->
+    <view class="cmpbar anim {{cmpOpen ? '' : 'shut'}}" wx:if="{{seg !== 'growth' && cmp.has}}">
+      <view class="cmp-h" hover-class="hv-row" hover-stay-time="60" bindtap="toggleCmp">
+        <text>较上一周期（{{cmp.n}} 天 · 日均对比）</text>
+        <text class="cmp-chev {{cmpOpen ? 'open' : ''}}">›</text>
+      </view>
+      <view class="cmp-row" wx:if="{{cmpOpen}}">
+        <view class="cmp-i {{seg === item.seg ? 'on' : ''}}" wx:for="{{cmp.items}}" wx:key="k" hover-class="hv-row" hover-stay-time="60" data-k="{{item.seg}}" bindtap="onCmpTap">
+          <view class="cmp-k">{{item.k}}</view>
+          <view class="cmp-v {{item.dir}}">{{item.txt}}</view>
+          <view class="cmp-s">{{item.prev}} → {{item.cur}}</view>
+        </view>
+      </view>
+    </view>
+
     <!-- ============ 喂养 ============ -->
     <view class="chartcard anim" wx:if="{{seg === 'feed'}}">
       <view class="ch-h">
@@ -256,7 +271,7 @@
     </view>
 
     <view class="share-bar anim">
-      <view class="share-btn {{sharing ? 'off' : ''}}" hover-class="hv-pill" hover-stay-time="80" bindtap="genShare">{{sharing ? '正在生成…' : '📤 生成今日摘要卡片'}}</view>
+      <view class="share-btn {{sharing ? 'off' : ''}}" hover-class="hv-pill" hover-stay-time="80" bindtap="genShare">{{sharing ? '正在生成…' : '📤 生成摘要 / 周报长图'}}</view>
     </view>
   </scroll-view>
 

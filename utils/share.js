@@ -95,6 +95,83 @@ function weeklyData() {
   };
 }
 
+// 周报 / 月报长图（n = 7 或 30）
+function reportData(n) {
+  n = n === 30 ? 30 : 7;
+  var records = storage.records();
+  var days = stats.dailyAgg(records, n);
+  var sum = { ml: 0, feed: 0, diaper: 0, sleepMin: 0 };
+  var activeDays = 0;
+  days.forEach(function (d) {
+    sum.ml += d.feedMl; sum.feed += d.feedCount; sum.diaper += d.diaper; sum.sleepMin += d.sleepMin;
+    if (d.feedCount > 0) { activeDays++; }
+  });
+  var cmp = stats.comparePeriods(records, days[0].ts, days[n - 1].ts);
+  var chip = function (k, pct, cur, prev) {
+    var dir = 'flat', txt = '持平';
+    if (pct === null) { dir = 'up'; txt = '新增'; }
+    else if (pct > 0) { dir = 'up'; txt = '↑ ' + pct + '%'; }
+    else if (pct < 0) { dir = 'down'; txt = '↓ ' + Math.abs(pct) + '%'; }
+    return { k: k, dir: dir, txt: txt, cur: cur, prev: prev };
+  };
+  var cmpItems = cmp.has ? [
+    chip('日均奶量', cmp.pct.ml, cmp.avgCur.ml + 'ml', cmp.avgPrev.ml + 'ml'),
+    chip('日均尿布', cmp.pct.diaper, cmp.avgCur.diaper + '次', cmp.avgPrev.diaper + '次'),
+    chip('日均睡眠', cmp.pct.sleep, cmp.avgCur.sleepH + 'h', cmp.avgPrev.sleepH + 'h')
+  ] : [];
+
+  // 体温区间（最高 / 最低）
+  var tds = stats.tempDays(records, n);
+  var tvals = [];
+  tds.forEach(function (d) {
+    if (d.am) { tvals.push(d.am.celsius); }
+    if (d.pm) { tvals.push(d.pm.celsius); }
+  });
+  var tmax = tvals.length ? Math.max.apply(null, tvals) : 0;
+  var tmin = tvals.length ? Math.min.apply(null, tvals) : 0;
+
+  // 最近一次成长
+  var gs = records.filter(function (r) { return r.type === 'growth'; }).sort(function (a, b) { return b.time - a.time; });
+  var growth = '暂无记录';
+  if (gs.length) {
+    var g = gs[0], p = [];
+    if (g.weight > 0) { p.push(g.weight + 'kg'); }
+    if (g.height > 0) { p.push(g.height + 'cm'); }
+    if (g.headCirc > 0) { p.push(g.headCirc + 'cm'); }
+    growth = p.join(' / ') || '已记录';
+  } else if (storage.baby().birthWeight > 0) {
+    growth = '出生 ' + storage.baby().birthWeight + 'kg';
+  }
+
+  var bars = days.map(function (d) {
+    var dt = new Date(d.ts);
+    return { label: (dt.getMonth() + 1) + '/' + dt.getDate(), v: d.feedMl, today: T.dayKey(d.ts) === T.dayKey(Date.now()) };
+  });
+
+  return {
+    kind: 'report',
+    title: n === 7 ? '这一周的成长记录' : '这一个月的成长记录',
+    sub: T.fmtYMD(days[0].ts).replace(/-/g, '/') + ' - ' + T.fmtYMD(days[n - 1].ts).replace(/-/g, '/') +
+      ' · 记录 ' + activeDays + '/' + n + ' 天',
+    baby: ageLine(),
+    kpis: [
+      { label: '总奶量', v: sum.ml, u: 'ml', c: C.feed, bg: C.feedS },
+      { label: '日均奶量', v: Math.round(sum.ml / n), u: 'ml', c: C.diaper, bg: C.diaperS },
+      { label: '喂养次数', v: sum.feed, u: '次', c: C.sleep, bg: C.sleepS }
+    ],
+    chartTitle: '近 ' + n + ' 天奶量 (ml)',
+    bars: bars,
+    compareTitle: n === 7 ? '较上一周（日均）' : '较上一个月（日均）',
+    compare: cmpItems,
+    rows: [
+      { k: '总尿布', v: String(sum.diaper), u: ' 次', sub: '日均 ' + (Math.round(sum.diaper / n * 10) / 10) + ' 次', c: C.diaper, bg: C.diaperS },
+      { k: '睡眠时长', v: String(Math.round(sum.sleepMin / 60)), u: ' h', sub: '日均 ' + (Math.round(sum.sleepMin / 6 / n) / 10) + ' h', c: C.sleep, bg: C.sleepS },
+      { k: '体温范围', v: tvals.length ? (tmin + '~' + tmax) : '—', u: tvals.length ? ' °C' : '', sub: tvals.length ? '共 ' + tvals.length + ' 次测量' : '未记录', c: C.temp, bg: C.tempS },
+      { k: '成长', v: growth, u: '', sub: '最近一次', c: C.growth, bg: C.growthS }
+    ]
+  };
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -217,7 +294,8 @@ function drawChart(ctx, x, y, w, title, bars) {
     ctx.fillStyle = b.today ? C.feed : C.ink3;
     ctx.font = b.today ? 'bold 19px sans-serif' : '19px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(b.label, cx, base + 12);
+    // 30 天时标签太密：每 5 天标一个，并保证今天有标签
+    if (n <= 10 || i % 5 === 0 || (b.today && i > n - 4)) { ctx.fillText(b.label, cx, base + 12); }
   });
   ctx.textAlign = 'left';
   return 52 + areaH + 44; // 图表块总高
@@ -267,7 +345,75 @@ function drawRows(ctx, x, y, w, rows) {
   return rows.length * rh;
 }
 
+// 环比条（周报/月报）
+function drawCompare(ctx, x, y, w, title, items) {
+  ctx.fillStyle = C.ink;
+  ctx.font = 'bold 26px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(title, x, y);
+  var py = y + 40, ph = 74;
+  fillRound(ctx, x, py, w, ph, 16, '#F6F8FC');
+  var n = items.length;
+  var cw = w / items.length;
+  items.forEach(function (it, i) {
+    var cx = x + cw * i + 18;
+    if (i > 0) {
+      ctx.strokeStyle = C.line;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + cw * i, py + 14);
+      ctx.lineTo(x + cw * i, py + ph - 14);
+      ctx.stroke();
+    }
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C.ink3;
+    ctx.font = '18px sans-serif';
+    ctx.fillText(it.k, cx, py + 12);
+    ctx.fillStyle = it.dir === 'up' ? '#C46A12' : (it.dir === 'down' ? '#2C6FE0' : C.ink2);
+    ctx.font = 'bold 25px sans-serif';
+    ctx.fillText(it.txt, cx, py + 33);
+    ctx.fillStyle = C.ink3;
+    ctx.font = '16px sans-serif';
+    ctx.fillText(it.prev + ' → ' + it.cur, cx, py + 60);
+  });
+  return 40 + ph;
+}
+
+// 周报 / 月报版式
+function drawReport(ctx, w, h, data) {
+  drawBackdrop(ctx, w, h);
+
+  var pad = 32;
+  var cardX = pad, cardY = pad, cardW = w - pad * 2, cardH = h - pad * 2;
+  fillRound(ctx, cardX, cardY, cardW, cardH, 32, C.card);
+  ctx.strokeStyle = 'rgba(31,36,48,0.05)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, cardX, cardY, cardW, cardH, 32);
+  ctx.stroke();
+
+  var inX = cardX + 28, inW = cardW - 56;
+  drawHeader(ctx, inX, cardY + 28, inW, data);
+
+  var y = cardY + 28 + 200 + 26;
+  drawKpis(ctx, inX, y, inW, data.kpis);
+  y += 148 + 40;
+  drawChart(ctx, inX, y, inW, data.chartTitle, data.bars);
+  y += 52 + 150 + 44 + 26;
+  if (data.compare && data.compare.length) {
+    drawCompare(ctx, inX, y, inW, data.compareTitle, data.compare);
+    y += 40 + 74 + 26;
+  }
+  drawRows(ctx, inX, y, inW, data.rows);
+
+  ctx.fillStyle = C.ink3;
+  ctx.font = '20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('小芽拾光记 · 数据仅存于本机', w / 2, cardY + cardH - 36);
+  ctx.textAlign = 'left';
+}
+
 function draw(ctx, w, h, data) {
+  if (data && data.kind === 'report') { drawReport(ctx, w, h, data); return; }
   drawBackdrop(ctx, w, h);
 
   var pad = 32;
@@ -293,12 +439,16 @@ function draw(ctx, w, h, data) {
   ctx.fillStyle = C.ink3;
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('新生儿喂养记录 · 数据仅存于本机', w / 2, cardY + cardH - 36);
+  ctx.fillText('小芽拾光记 · 数据仅存于本机', w / 2, cardY + cardH - 36);
   ctx.textAlign = 'left';
 }
 
 // 卡片总高：pad*2 + header(28+200) + kpi(26+148) + gap40 + chart(52+150+44) + gap26 + rows*96 + footer余量
 function layoutHeight(data) {
+  if (data && data.kind === 'report') {
+    var hasCmp = data.compare && data.compare.length ? (40 + 74 + 26) : 0;
+    return 64 + 228 + 174 + 40 + 246 + 26 + hasCmp + data.rows.length * 96 + 60;
+  }
   return 64 + 228 + 174 + 40 + 246 + 26 + data.rows.length * 96 + 60;
 }
 
@@ -350,27 +500,38 @@ function isDevtools() {
 // 开发者工具不支持 showShareImageMenu / saveImageToPhotosAlbum，
 // 且这两个接口在模拟器里会自己弹原生提示层（容易卡成残影），所以模拟器内直接预览图片。
 function share(data, cb) {
+  var done = false;
+  function once(err, path) {
+    if (done) { return; }
+    done = true;
+    cb(err, path);
+  }
+  // 兜底：分享层接口既不 success 也不 fail 时，避免页面 sharing 态永久锁死
+  var guard = setTimeout(function () { once({ errMsg: '分享超时' }, null); }, 12000);
+  function fin(err, path) { clearTimeout(guard); once(err, path); }
+
   render(data, function (err, path) {
-    if (err || !path) { cb(err || new Error('生成失败'), null); return; }
+    if (err || !path) { fin(err || { errMsg: '生成失败' }, null); return; }
     if (isDevtools()) {
       wx.previewImage({
         urls: [path],
-        success: function () { cb(null, path); },
-        fail: function () { cb(null, path); }
+        success: function () { fin(null, path); },
+        fail: function (e) { fin({ errMsg: (e && e.errMsg) || '预览失败' }, null); }
       });
       return;
     }
     if (typeof wx.showShareImageMenu === 'function') {
       wx.showShareImageMenu({
         path: path,
-        success: function () { cb(null, path); },
+        success: function () { fin(null, path); },
         fail: function (e) {
-          // 用户取消或失败 → 退回存相册
-          saveAlbum(path, cb);
+          // 用户主动取消不算失败，也不能顺手把图存进相册
+          if (/cancel/i.test((e && e.errMsg) || '')) { fin({ errMsg: '已取消分享' }, null); return; }
+          saveAlbum(path, fin);
         }
       });
     } else {
-      saveAlbum(path, cb);
+      saveAlbum(path, fin);
     }
   });
 }
@@ -379,13 +540,18 @@ function saveAlbum(path, cb) {
   wx.saveImageToPhotosAlbum({
     filePath: path,
     success: function () { cb(null, path); },
-    fail: function (err) { cb(err || new Error('保存失败'), null); }
+    fail: function (err) {
+      var msg = (err && err.errMsg) || '';
+      var friendly = /auth|deny|denied/i.test(msg) ? '没有相册权限，可在系统设置里开启' : '保存失败';
+      cb({ errMsg: friendly }, null);
+    }
   });
 }
 
 module.exports = {
   dailyData: dailyData,
   weeklyData: weeklyData,
+  reportData: reportData,
   render: render,
   share: share
 };

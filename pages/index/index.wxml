@@ -149,6 +149,18 @@
       </view>
     </view>
 
+    <view
+      class="repline anim"
+      wx:if="{{hasFeed && repeatLabel}}"
+      hover-class="hv-cell" hover-stay-time="80"
+      bindtap="onRepeatFeed"
+      aria-role="button" aria-label="按上次喂养再记一条"
+    >
+      <text class="repline-ic">↻</text>
+      <text class="repline-t">同上次再记一次</text>
+      <text class="repline-v">{{repeatLabel}}</text>
+    </view>
+
     <view class="statline anim">
       <view class="stat" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
         <b>{{today.feedCount}}</b>

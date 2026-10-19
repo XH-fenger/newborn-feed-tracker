@@ -67,7 +67,7 @@
         </view>
         <view class="rbody">
           <view class="rt">数据</view>
-          <view class="rd">导出、导入、分享摘要和清空</view>
+          <view class="rd">导出、导入、分享摘要 / 周报长图和清空</view>
         </view>
         <text class="chev">›</text>
       </view>
