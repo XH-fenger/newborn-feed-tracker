@@ -7,7 +7,9 @@ function defaultDb() {
     baby: { name: '宝宝', gender: 'M', birthday: '', birthWeight: '' },
     records: [],
     todos: [],
-    settings: { theme: 'indigo', dark: false, reminderEnabled: true, feedInterval: 180, nightFeedInterval: 240,
+    settings: { theme: 'indigo', dark: false, darkAuto: true, darkStart: '19:00', darkEnd: '07:00',
+      darkHold: '', darkHoldZone: '', elder: false,
+      reminderEnabled: true, feedInterval: 180, nightFeedInterval: 240,
       alarmSnoozeUntil: 0, alarmDismissAt: 0, alarmFeedId: '' }
   };
 }
@@ -160,7 +162,23 @@ function saveBaby(b) {
 }
 
 /* ---------- 设置 ---------- */
-function settings() { return db().settings; }
+function isHM(str) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(str || '');
+}
+
+function settings() {
+  var d = db();
+  var s = d.settings || {};
+  var dirty = false;
+  if (typeof s.darkAuto !== 'boolean') { s.darkAuto = true; dirty = true; }
+  if (!isHM(s.darkStart)) { s.darkStart = '19:00'; dirty = true; }
+  if (!isHM(s.darkEnd)) { s.darkEnd = '07:00'; dirty = true; }
+  if (s.darkHold !== 'on' && s.darkHold !== 'off' && s.darkHold) { s.darkHold = ''; dirty = true; }
+  if (s.darkHoldZone !== 'in' && s.darkHoldZone !== 'out' && s.darkHoldZone) { s.darkHoldZone = ''; dirty = true; }
+  if (typeof s.elder !== 'boolean') { s.elder = false; dirty = true; }
+  if (dirty) { d.settings = s; saveDb(d); }
+  return d.settings;
+}
 function saveSetting(k, v) {
   var d = db();
   d.settings[k] = v;
@@ -196,8 +214,15 @@ function importDb(obj, mode) {
   fresh.baby = obj.baby || fresh.baby;
   fresh.settings = obj.settings || fresh.settings;
   // 保留本机当前外观选择（主题/暗黑是设备偏好，不随数据走）
-  fresh.settings.theme = settings().theme;
-  fresh.settings.dark = settings().dark;
+  var keep = settings();
+  fresh.settings.theme = keep.theme;
+  fresh.settings.dark = keep.dark;
+  fresh.settings.darkAuto = !!keep.darkAuto;
+  fresh.settings.darkStart = keep.darkStart;
+  fresh.settings.darkEnd = keep.darkEnd;
+  fresh.settings.darkHold = keep.darkHold || '';
+  fresh.settings.darkHoldZone = keep.darkHoldZone || '';
+  fresh.settings.elder = !!keep.elder;
   fresh.records = (obj.records || []).map(function (r) {
     var n = { id: r.id || genId() };
     for (var k in r) { n[k] = r[k]; }

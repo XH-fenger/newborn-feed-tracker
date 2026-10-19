@@ -44,7 +44,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    var patch = { theme: g.theme, dark: g.dark };
+    var patch = { theme: g.theme, dark: g.dark, elder: !!g.elder };
     var ic = this.buildIcons();
     patch.ic = ic.ic;
     patch.icBack = ic.icBack;

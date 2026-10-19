@@ -1,0 +1,21 @@
+<view
+  wx:if="{{show}}"
+  class="dock {{side}} {{open ? 'open' : ''}} t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}"
+  style="top:{{top}}px"
+  catchtouchstart="onTouchStart"
+  catchtouchmove="onTouchMove"
+  catchtouchend="onTouchEnd"
+>
+  <view class="dock-panel">
+    <view class="dock-name" data-act="page"><text data-act="page">{{title}}</text></view>
+    <view
+      class="dock-btn"
+      data-act="toggle"
+      aria-role="button"
+      aria-label="{{playing ? '停止哄睡' : '开始哄睡'}}"
+    ><text data-act="toggle">{{playing ? '停止' : '开始'}}</text></view>
+  </view>
+  <view class="dock-ear" data-act="ear" aria-role="button" aria-label="{{open ? '收起哄睡控制' : '展开哄睡控制'}}">
+    <image class="dock-note" data-act="ear" src="{{icNote}}" mode="aspectFit" />
+  </view>
+</view>

@@ -1,0 +1,88 @@
+<view class="page noise-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">哄睡</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 16}}px">
+    <view class="card noise-hero anim">
+      <view class="noise-kicker">{{playing ? '正在播放' : '准备哄睡'}}</view>
+      <view class="noise-name">{{kindName}}</view>
+      <view class="noise-status">{{status}}</view>
+      <view class="noise-stage">
+        <view class="noise-rip" wx:if="{{playing}}">
+          <view class="noise-rip-c"></view>
+          <view class="noise-rip-c d2"></view>
+          <view class="noise-rip-c d3"></view>
+        </view>
+        <view class="noise-play {{playing ? 'on' : ''}}" hover-class="hv-save" hover-stay-time="80" bindtap="onToggle">
+          {{playing ? '停止' : '开始'}}
+        </view>
+      </view>
+      <view class="noise-vol">
+        <text class="noise-vol-k">音量</text>
+        <slider
+          class="noise-slider"
+          min="0"
+          max="100"
+          step="1"
+          value="{{volume}}"
+          activeColor="{{pri}}"
+          backgroundColor="{{sliderBg}}"
+          block-size="22"
+          bindchanging="onVolume"
+          bindchange="onVolumeEnd"
+        />
+        <text class="noise-vol-n">{{volume}}</text>
+      </view>
+      <view class="noise-err" wx:if="{{error}}">{{error}}</view>
+    </view>
+
+    <view class="sec anim">声音</view>
+    <view class="card noise-grid-card anim">
+      <view class="noise-grid">
+        <view
+          wx:for="{{kinds}}"
+          wx:key="k"
+          class="noise-item {{kind === item.k ? 'on' : ''}}"
+          hover-class="hv-si"
+          hover-stay-time="60"
+          data-k="{{item.k}}"
+          bindtap="onKind"
+        >{{item.t}}</view>
+      </view>
+    </view>
+
+    <view class="sec anim">自动停止</view>
+    <view class="card anim">
+      <view class="fld">
+        <view class="noise-times">
+          <view
+            wx:for="{{timers}}"
+            wx:key="m"
+            class="noise-time {{minutes === item.m ? 'on' : ''}}"
+            hover-class="hv-si"
+            hover-stay-time="60"
+            data-m="{{item.m}}"
+            bindtap="onTimer"
+          >{{item.t}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="noise-foot anim">
+      <view class="noise-foot-row">滑杆调节音量，手机音量键是上限</view>
+      <view class="noise-foot-row">宜轻放，不要贴着耳朵</view>
+      <view class="noise-foot-row">返回首页会接着放</view>
+      <view class="noise-foot-row">锁屏若被系统暂停，再打开会继续，到点自动停</view>
+    </view>
+  </view>
+
+  <toast id="toast" />
+</view>

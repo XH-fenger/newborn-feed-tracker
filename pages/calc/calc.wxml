@@ -1,0 +1,108 @@
+<view class="page calc-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">奶量计算器</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 16}}px">
+
+    <view class="card anim">
+      <view class="fld">
+        <view class="flabel">喂什么</view>
+        <view class="seg-inline">
+          <view class="si {{kind === 'breast' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="breast" bindtap="onKind">母乳</view>
+          <view class="si {{kind === 'formula' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="formula" bindtap="onKind">配方奶</view>
+        </view>
+      </view>
+      <view class="fld">
+        <view class="flabel">宝宝情况</view>
+        <view class="seg-inline">
+          <view class="si {{preterm ? '' : 'on'}}" hover-class="hv-si" hover-stay-time="60" data-k="term" bindtap="onCohort">足月</view>
+          <view class="si {{preterm ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="preterm" bindtap="onCohort">早产或低体重</view>
+        </view>
+      </view>
+      <view class="fld" wx:if="{{kind === 'breast'}}">
+        <view class="flabel">母乳强化剂</view>
+        <view class="seg-inline">
+          <view class="si {{fortify === 'none' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="none" bindtap="onFort">不添加</view>
+          <view class="si {{fortify === 'half' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="half" bindtap="onFort">半量</view>
+          <view class="si {{fortify === 'full' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-k="full" bindtap="onFort">全量</view>
+        </view>
+        <view class="fhint">半量 2 g/100 ml，全量 4 g/100 ml。这是雀巢 FM 85 说明书上的起步量和标准量。</view>
+      </view>
+    </view>
+
+    <view class="card anim">
+      <view class="fld">
+        <view class="flabel-row">
+          <text class="flabel">体重</text>
+          <text class="flabel-a" wx:if="{{weightSrc}}">已填入{{weightSrc}}</text>
+        </view>
+        <input
+          class="tx"
+          type="digit"
+          value="{{weight}}"
+          maxlength="5"
+          placeholder="例如 3.6"
+          placeholder-class="ph"
+          bindinput="onWeight"
+        />
+        <view class="ferr" wx:if="{{weightErr}}">体重请填 0.5–20 kg</view>
+        <view class="fhint" wx:else>单位 kg。纯母乳满月后按国际平均摄入量估算，可以不填体重。</view>
+      </view>
+      <view class="fld">
+        <view class="flabel">一天喂几次</view>
+        <view class="stepper">
+          <view class="st {{feeds <= 4 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" bindtap="onFeedDec" aria-role="button" aria-label="减少次数">−</view>
+          <view class="num">{{feeds}}<text class="unit">次</text></view>
+          <view class="st {{feeds >= 12 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" bindtap="onFeedInc" aria-role="button" aria-label="增加次数">+</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card calc-out anim" wx:if="{{result.ok}}">
+      <view class="calc-k">每次大约</view>
+      <view class="calc-v">{{result.perMid}}<text class="calc-u">ml</text></view>
+      <view class="calc-range">大约 {{result.perMin}}–{{result.perMax}} ml</view>
+      <view class="calc-split">
+        <view class="calc-col">
+          <view class="calc-sk">一天参考</view>
+          <view class="calc-sv">{{result.dayMid}} ml</view>
+          <view class="calc-sr">{{result.dayMin}}–{{result.dayMax}} ml</view>
+        </view>
+        <view class="calc-col">
+          <view class="calc-sk">今天已记</view>
+          <view class="calc-sv">{{todayMl}} ml</view>
+          <view class="calc-sr">{{gap}}</view>
+        </view>
+      </view>
+      <view class="calc-src" wx:if="{{result.source}}">依据 {{result.source}}</view>
+      <view class="calc-basis">{{result.basis}}</view>
+
+      <view class="calc-fort" wx:if="{{result.fort}}">
+        <view class="calc-caution" wx:if="{{result.fort.caution}}">足月健康儿通常不加强化剂。下面只是按说明书比例换算。</view>
+        <view class="calc-k">按这次参考奶量加强化剂</view>
+        <view class="calc-v calc-v-sm">{{result.fort.perG}}<text class="calc-u">g</text></view>
+        <view class="calc-range">一天大约 {{result.fort.dayG}} g · {{result.fort.rateText}}</view>
+        <view class="calc-basis">{{result.fort.note}}</view>
+      </view>
+    </view>
+
+    <view class="card calc-empty anim" wx:elif="{{needWeight}}">
+      <view class="calc-empty-t">填入体重后就能算出参考奶量</view>
+      <view class="calc-empty-s">按体重估算时需要当前体重或出生体重。也可以先去宝宝资料里填写。</view>
+      <view class="calc-link" hover-class="hv-ghost" hover-stay-time="60" bindtap="goBaby">去填宝宝资料</view>
+    </view>
+
+    <view class="calc-note anim">母乳按需喂，配方奶按宝宝的饥饿和尿量调整。强化剂的品牌、克数和要不要加，以儿科或新生儿科医嘱为准。本页不能代替医嘱。</view>
+  </view>
+
+  <noise-dock id="noiseDock" />
+  <toast id="toast" />
+</view>

@@ -57,7 +57,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    this.setData({ theme: g.theme, dark: g.dark });
+    this.setData({ theme: g.theme, dark: g.dark, elder: !!g.elder });
     if (typeof this.getTabBar === 'function') {
       var tb = this.getTabBar();
       if (tb) { tb.sync(g.theme, g.dark); tb.setSelected(2); }

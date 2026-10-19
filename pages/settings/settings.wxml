@@ -1,0 +1,130 @@
+<view class="page settings-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">设置</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 16}}px">
+    <view class="sec anim">提醒</view>
+    <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="toggleReminder" aria-role="switch" aria-checked="{{reminderEnabled}}" aria-label="间隔提醒">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.bell}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">间隔提醒</view>
+          <view class="rd">超过建议间隔时全屏提醒</view>
+        </view>
+        <view class="switch {{reminderEnabled ? 'on' : ''}}">
+          <view class="knob"></view>
+        </view>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickInterval">
+        <view class="ric" style="background:var(--diaperS)">
+          <image class="ric-ic" src="{{ic.clock}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">建议间隔</view>
+          <view class="rd">新生儿 2-3 小时一次</view>
+        </view>
+        <view class="rr">{{intervalTxt}} <text class="chev">›</text></view>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickNightInterval">
+        <view class="ric" style="background:var(--sleepS)">
+          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">夜间间隔</view>
+          <view class="rd">22:00–07:00 自动放宽，少打扰睡眠</view>
+        </view>
+        <view class="rr">{{nightIntervalTxt}} <text class="chev">›</text></view>
+      </view>
+    </view>
+
+    <view class="sec sec-row anim">外观<text class="secv">{{themeName}}</text></view>
+    <view class="card anim">
+      <view class="tgrid">
+        <view
+          wx:for="{{themes}}" wx:key="k"
+          class="tsw {{theme === item.k ? 'on' : ''}}"
+          hover-class="hv-tsw" hover-stay-time="60"
+          data-k="{{item.k}}"
+          bindtap="onThemePick"
+        >
+          <view class="dot" style="background:{{item.dot}}"></view>
+          <text class="tname">{{item.name}}</text>
+          <view class="tick"><image class="tick-ic" src="{{ic.check}}" mode="aspectFit" /></view>
+        </view>
+      </view>
+      <view class="row row-sep" hover-class="hv-row" hover-stay-time="60" bindtap="toggleDark" aria-role="switch" aria-checked="{{dark}}" aria-label="深色模式">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">深色模式</view>
+          <view class="rd">{{darkHint}}</view>
+        </view>
+        <view class="switch {{dark ? 'on' : ''}}">
+          <view class="knob"></view>
+        </view>
+      </view>
+      <view class="row row-sep" hover-class="hv-row" hover-stay-time="60" bindtap="toggleElder" aria-role="switch" aria-checked="{{elder}}" aria-label="老年模式">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.elder}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">老年模式</view>
+          <view class="rd">字号和按钮更大，方便看清</view>
+        </view>
+        <view class="switch {{elder ? 'on' : ''}}">
+          <view class="knob"></view>
+        </view>
+      </view>
+      <view class="row row-sep" hover-class="hv-row" hover-stay-time="60" bindtap="toggleDarkAuto" aria-role="switch" aria-checked="{{darkAuto}}" aria-label="定时暗黑">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.clockDark}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">定时暗黑</view>
+          <view class="rd">到点自动切换，可随时关闭</view>
+        </view>
+        <view class="switch {{darkAuto ? 'on' : ''}}">
+          <view class="knob"></view>
+        </view>
+      </view>
+      <picker wx:if="{{darkAuto}}" mode="time" value="{{darkStart}}" bindchange="onDarkStart">
+        <view class="row row-sep" hover-class="hv-row" hover-stay-time="60">
+          <view class="ric" style="background:var(--sleepS)">
+            <image class="ric-ic" src="{{ic.clockDark}}" mode="aspectFit" />
+          </view>
+          <view class="rbody">
+            <view class="rt">开始时间</view>
+            <view class="rd">进入这段时间后开启暗黑</view>
+          </view>
+          <view class="rr">{{darkStart}} <text class="chev">›</text></view>
+        </view>
+      </picker>
+      <picker wx:if="{{darkAuto}}" mode="time" value="{{darkEnd}}" bindchange="onDarkEnd">
+        <view class="row row-sep" hover-class="hv-row" hover-stay-time="60">
+          <view class="ric" style="background:var(--feedS)">
+            <image class="ric-ic" src="{{ic.clockDark}}" mode="aspectFit" />
+          </view>
+          <view class="rbody">
+            <view class="rt">结束时间</view>
+            <view class="rd">{{darkRange}} 为暗黑时段</view>
+          </view>
+          <view class="rr">{{darkEnd}} <text class="chev">›</text></view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <noise-dock id="noiseDock" />
+  <toast id="toast" />
+</view>

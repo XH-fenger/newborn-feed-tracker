@@ -1,5 +1,6 @@
 // theme.js —— 主题/暗黑管理（CSS 变量走 theme.wxss；此处供 JS 侧：canvas 图表、SVG 图标、窗口底色）
 var storage = require('./storage.js');
+var darkAuto = require('./darkAuto.js');
 
 var THEMES = {
   indigo: { name: '靛蓝', pri: '#5A67E8', pri2: '#8B96FF', priInk: '#3A46B8', priSoft: '#EAEDFE',
@@ -35,27 +36,43 @@ function colors(theme, dark) {
   return c;
 }
 
+function appInst(passed) {
+  if (passed && passed.globalData) { return passed; }
+  try {
+    var app = getApp();
+    if (app && app.globalData) { return app; }
+  } catch (e) { }
+  return null;
+}
+
 function current() {
-  var g = getApp().globalData;
+  var app = appInst();
+  var g = app ? app.globalData : { theme: 'indigo', dark: false };
   return colors(g.theme, g.dark);
 }
 
 // 切换主题/暗黑：持久化 + 通知页面栈 + TabBar + 窗口背景
-function apply(theme, dark) {
-  var app = getApp();
+function apply(theme, dark, passedApp) {
+  var app = appInst(passedApp);
+  if (!app) { return; }
   app.globalData.theme = theme;
   app.globalData.dark = dark;
   storage.saveSetting('theme', theme);
   storage.saveSetting('dark', dark);
 
   var pages = getCurrentPages();
+  var elder = !!app.globalData.elder;
   pages.forEach(function (p) {
-    var patch = { theme: theme, dark: dark };
+    var patch = { theme: theme, dark: dark, elder: elder };
     if (typeof p.buildIcons === 'function') {
       var extra = p.buildIcons();
       for (var k in extra) { patch[k] = extra[k]; }
     }
     p.setData(patch);
+    if (typeof p.selectComponent === 'function') {
+      var dock = p.selectComponent('#noiseDock');
+      if (dock && typeof dock.syncLook === 'function') { dock.syncLook(); }
+    }
   });
 
   // 当前页 TabBar 主题联动（其余页在其 onShow 时自行同步）
@@ -66,6 +83,108 @@ function apply(theme, dark) {
   }
 
   syncWindow(theme, dark);
+  pages.forEach(function (p) {
+    if (typeof p.syncDarkMeta === 'function') { p.syncDarkMeta(); }
+  });
+}
+
+var autoTimer = null;
+
+function disarm() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+}
+
+function arm() {
+  disarm();
+  var s = storage.settings();
+  if (!s.darkAuto) { return; }
+  var wait = darkAuto.msUntilNext(Date.now(), s);
+  autoTimer = setTimeout(function () {
+    autoTimer = null;
+    syncAuto();
+    arm();
+  }, wait);
+}
+
+// 定时开启时，到点改暗黑；关闭定时后保持当前外观
+function syncAuto(passedApp) {
+  var app = appInst(passedApp);
+  if (!app) { return; }
+  var s = storage.settings();
+  if (!s.darkAuto) { return; }
+  var r = darkAuto.desired(s, Date.now());
+  if (r.clearHold) {
+    storage.saveSetting('darkHold', '');
+    storage.saveSetting('darkHoldZone', '');
+  }
+  if (!!app.globalData.dark !== r.dark) {
+    apply(app.globalData.theme || s.theme || 'indigo', r.dark, app);
+  } else if (r.clearHold) {
+    var pages = getCurrentPages();
+    pages.forEach(function (p) {
+      if (typeof p.syncDarkMeta === 'function') { p.syncDarkMeta(); }
+    });
+  }
+}
+
+function boot(passedApp) {
+  syncAuto(passedApp);
+  arm();
+}
+
+function manualToggle() {
+  var app = getApp();
+  var s = storage.settings();
+  var next = !app.globalData.dark;
+  if (s.darkAuto) {
+    storage.saveSetting('darkHold', next ? 'on' : 'off');
+    storage.saveSetting('darkHoldZone', darkAuto.zone(Date.now(), s));
+  }
+  apply(app.globalData.theme, next);
+}
+
+function setAuto(on) {
+  storage.saveSetting('darkAuto', !!on);
+  storage.saveSetting('darkHold', '');
+  storage.saveSetting('darkHoldZone', '');
+  if (on) {
+    var s = storage.settings();
+    var want = darkAuto.inWindow(Date.now(), s);
+    apply(getApp().globalData.theme, want);
+    arm();
+  } else {
+    disarm();
+    var pages = getCurrentPages();
+    pages.forEach(function (p) {
+      if (typeof p.syncDarkMeta === 'function') { p.syncDarkMeta(); }
+    });
+  }
+}
+
+function setRange(start, end) {
+  if (!darkAuto.isHM(start) || !darkAuto.isHM(end) || start === end) { return false; }
+  storage.saveSetting('darkStart', start);
+  storage.saveSetting('darkEnd', end);
+  storage.saveSetting('darkHold', '');
+  storage.saveSetting('darkHoldZone', '');
+  var s = storage.settings();
+  if (s.darkAuto) {
+    apply(getApp().globalData.theme, darkAuto.inWindow(Date.now(), s));
+    arm();
+  } else {
+    var pages = getCurrentPages();
+    pages.forEach(function (p) {
+      if (typeof p.syncDarkMeta === 'function') { p.syncDarkMeta(); }
+    });
+  }
+  return true;
+}
+
+function setElder(on) {
+  var app = getApp();
+  app.globalData.elder = !!on;
+  storage.saveSetting('elder', !!on);
+  apply(app.globalData.theme, app.globalData.dark);
 }
 
 function syncWindow(theme, dark) {
@@ -75,4 +194,10 @@ function syncWindow(theme, dark) {
   } catch (e) { /* 低版本忽略 */ }
 }
 
-module.exports = { THEMES: THEMES, colors: colors, current: current, apply: apply, syncWindow: syncWindow };
+module.exports = {
+  THEMES: THEMES, colors: colors, current: current, apply: apply, syncWindow: syncWindow,
+  boot: boot, arm: arm, disarm: disarm, syncAuto: syncAuto,
+  manualToggle: manualToggle, setAuto: setAuto, setRange: setRange, setElder: setElder,
+  darkHint: function (s) { return darkAuto.darkHint(s, Date.now()); },
+  rangeText: function (s) { return darkAuto.rangeText(s); }
+};

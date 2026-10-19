@@ -1,4 +1,4 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <!-- 未滚动时透明，头图从状态栏铺下来；滚动后浮现毛玻璃 -->
   <view class="nav nav-blank {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px;height:{{navBottom}}px"></view>
@@ -25,41 +25,8 @@
     </view>
 
   <view class="page-body">
-    <!-- ============ 提醒 ============ -->
-    <view class="sec anim">提醒</view>
+    <view class="sec anim">常用</view>
     <view class="card anim">
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="toggleReminder" aria-role="switch" aria-checked="{{reminderEnabled}}" aria-label="间隔提醒">
-        <view class="ric" style="background:var(--priSoft)">
-          <image class="ric-ic" src="{{ic.bell}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">间隔提醒</view>
-          <view class="rd">超过建议间隔时全屏提醒</view>
-        </view>
-        <view class="switch {{reminderEnabled ? 'on' : ''}}">
-          <view class="knob"></view>
-        </view>
-      </view>
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickInterval">
-        <view class="ric" style="background:var(--diaperS)">
-          <image class="ric-ic" src="{{ic.clock}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">建议间隔</view>
-          <view class="rd">新生儿 2-3 小时一次</view>
-        </view>
-        <view class="rr">{{intervalTxt}} <text class="chev">›</text></view>
-      </view>
-      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="pickNightInterval">
-        <view class="ric" style="background:var(--sleepS)">
-          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
-        </view>
-        <view class="rbody">
-          <view class="rt">夜间间隔</view>
-          <view class="rd">22:00–07:00 自动放宽，少打扰睡眠</view>
-        </view>
-        <view class="rr">{{nightIntervalTxt}} <text class="chev">›</text></view>
-      </view>
       <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goTodo">
         <view class="ric" style="background:var(--priSoft)">
           <image class="ric-ic" src="{{ic.todo}}" mode="aspectFit" />
@@ -70,35 +37,15 @@
         </view>
         <view class="rr">{{todoOpen ? todoOpen + ' 件' : ''}} <text class="chev">›</text></view>
       </view>
-    </view>
-
-    <!-- ============ 外观主题 ============ -->
-    <view class="sec sec-row anim">外观主题<text class="secv">{{theme === 'indigo' ? '靛蓝' : theme === 'mint' ? '晨雾青' : theme === 'sun' ? '暖阳橘' : '莓果粉'}}</text></view>
-    <view class="card anim">
-      <view class="tgrid">
-        <view
-          wx:for="{{themes}}" wx:key="k"
-          class="tsw {{theme === item.k ? 'on' : ''}}"
-          hover-class="hv-tsw" hover-stay-time="60"
-          data-k="{{item.k}}"
-          bindtap="onThemePick"
-        >
-          <view class="dot" style="background:{{item.dot}}"></view>
-          <text class="tname">{{item.name}}</text>
-          <view class="tick"><image class="tick-ic" src="{{ic.check}}" mode="aspectFit" /></view>
-        </view>
-      </view>
-      <view class="row row-sep" hover-class="hv-row" hover-stay-time="60" bindtap="toggleDark" aria-role="switch" aria-checked="{{dark}}" aria-label="深色模式">
-        <view class="ric" style="background:var(--priSoft)">
-          <image class="ric-ic" src="{{ic.moon}}" mode="aspectFit" />
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goSettings">
+        <view class="ric" style="background:var(--sleepS)">
+          <image class="ric-ic" src="{{ic.sliders}}" mode="aspectFit" />
         </view>
         <view class="rbody">
-          <view class="rt">深色模式</view>
-          <view class="rd">夜间柔光，呵护眼睛</view>
+          <view class="rt">设置</view>
+          <view class="rd">提醒、外观、深色和老年模式</view>
         </view>
-        <view class="switch {{dark ? 'on' : ''}}">
-          <view class="knob"></view>
-        </view>
+        <view class="rr">{{themeName}} <text class="chev">›</text></view>
       </view>
     </view>
 
@@ -164,5 +111,6 @@
     <view class="foot anim">喂养记录 v1.0.0<br />数据全部保存在本机，不上传云端</view>
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

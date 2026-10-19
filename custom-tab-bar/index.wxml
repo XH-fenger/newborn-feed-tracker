@@ -1,4 +1,4 @@
-<view class="tb t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="tb t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
   <view class="sheet"></view>
   <view class="glide g{{selected}} {{glide ? 'anim' : ''}}" aria-hidden="true">
     <view class="bump">

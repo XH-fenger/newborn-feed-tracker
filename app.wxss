@@ -109,8 +109,8 @@ page {
 .hero-nav { position: relative; box-sizing: border-box; display: flex; align-items: center; padding-left: 22px; }
 .hero-top { position: relative; flex: 1; height: 100%; display: flex; align-items: center; justify-content: flex-end; }
 .daychip-slot {
-  position: absolute; left: 0; right: 0;
-  display: flex; align-items: center; justify-content: center;
+  position: absolute; left: 22px; right: auto;
+  display: flex; align-items: center; justify-content: flex-start;
   pointer-events: none; z-index: 1;
 }
 .daychip {
@@ -422,6 +422,98 @@ page {
 
 /* ============ 通用 image 图标 reset ============ */
 image { display: block; }
+
+/* ============ 老年模式：更大的字、行高和点击区域 ============ */
+.page.elder { padding-bottom: calc(128px + env(safe-area-inset-bottom)); }
+.page.elder.streak-page,
+.page.elder.calc-page { padding-bottom: calc(36px + env(safe-area-inset-bottom)); }
+.page.elder .nav-back { font-size: 18px; }
+.page.elder .nav-t,
+.page.elder .nav-mid-title { font-size: 20px; }
+.page.elder .nav-meta,
+.page.elder .nav-mid { font-size: 15px; }
+.page.elder .sec { font-size: 16px; }
+.page.elder .secv { font-size: 15px; }
+.page.elder .daychip { height: 36px; font-size: 16px; }
+.page.elder .hero-nm { font-size: 32px; }
+.page.elder .hero-meta { font-size: 16px; }
+.page.elder .tcv { font-size: 28px; }
+.page.elder .tcv small,
+.page.elder .tcl { font-size: 15px; }
+.page.elder .tempday-t { font-size: 18px; }
+.page.elder .tempday-sub,
+.page.elder .tslot-k,
+.page.elder .tslot-s { font-size: 15px; }
+.page.elder .tslot-v { font-size: 26px; }
+.page.elder .tslot-v small { font-size: 15px; }
+.page.elder .tslot.empty .tslot-v { font-size: 20px; }
+.page.elder .next-t,
+.page.elder .next-s,
+.page.elder .next-big small { font-size: 16px; }
+.page.elder .next-big { font-size: 36px; }
+.page.elder .row { min-height: 64px; padding-top: 14px; padding-bottom: 14px; }
+.page.elder .ric { width: 44px; height: 44px; }
+.page.elder .ric-ic { width: 22px; height: 22px; }
+.page.elder .row + .row::before { left: 74px; }
+.page.elder .rt { font-size: 19px; line-height: 1.35; }
+.page.elder .rd,
+.page.elder .rr .unit { font-size: 15.5px; line-height: 1.4; }
+.page.elder .rr { font-size: 18px; }
+.page.elder .flabel,
+.page.elder .flabel-a,
+.page.elder .fhint,
+.page.elder .ferr { font-size: 15px; }
+.page.elder .tx { height: 56px; font-size: 20px; }
+.page.elder .picker-shell { font-size: 20px; padding-top: 16px; padding-bottom: 16px; }
+.page.elder .seg-item,
+.page.elder .seg-inline .si { font-size: 16px; }
+.page.elder .stepper .st { width: 64px; height: 56px; font-size: 28px; }
+.page.elder .stepper .num,
+.page.elder .stepper .num-in { font-size: 22px; height: 56px; }
+.page.elder .btn-save,
+.page.elder .btn-pill { font-size: 20px; }
+.page.elder .switch { width: 56px; height: 34px; border-radius: 17px; }
+.page.elder .switch .knob { width: 30px; height: 30px; }
+.page.elder .switch.on .knob { transform: translateX(22px); }
+.page.elder .ch-h .h3 { font-size: 20px; }
+.page.elder .ch-h .sub,
+.page.elder .chip,
+.page.elder .kpi .kl,
+.page.elder .dd { font-size: 15px; }
+.page.elder .kpi .kv { font-size: 21px; }
+.page.elder .kpi .kv small,
+.page.elder .dv small { font-size: 13px; }
+.page.elder .dv { font-size: 17px; }
+.page.elder .pnm { font-size: 24px; }
+.page.elder .pmt,
+.page.elder .pstat span { font-size: 15px; }
+.page.elder .pstat b { font-size: 23px; }
+.page.elder .tsw .tname { font-size: 16px; }
+.page.elder .foot,
+.page.elder .empty .et2 { font-size: 15px; }
+.page.elder .empty .et1 { font-size: 18px; }
+.page.elder .vac-t,
+.page.elder .fever-t,
+.page.elder .calc-k,
+.page.elder .calc-range { font-size: 16px; }
+.page.elder .vac-s,
+.page.elder .fever-s,
+.page.elder .calc-sk,
+.page.elder .calc-sr,
+.page.elder .calc-basis,
+.page.elder .calc-note,
+.page.elder .calc-caution,
+.page.elder .calc-empty-s { font-size: 15px; }
+.page.elder .calc-v { font-size: 48px; }
+.page.elder .calc-sv,
+.page.elder .calc-empty-t,
+.page.elder .streak-title,
+.page.elder .cal-title { font-size: 20px; }
+.page.elder .streak-n { font-size: 28px; }
+.page.elder .streak-sub,
+.page.elder .node-lb,
+.page.elder .cal-week text { font-size: 15px; }
+.page.elder .cell-in { font-size: 17px; }
 
 /* 动效降级（系统层面：跟随系统减弱动画设置） */
 @media (prefers-reduced-motion: reduce) {

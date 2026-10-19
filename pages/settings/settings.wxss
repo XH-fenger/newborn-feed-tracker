@@ -1,0 +1,1 @@
+.settings-page { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }

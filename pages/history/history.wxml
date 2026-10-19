@@ -1,4 +1,4 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
@@ -63,5 +63,6 @@
 
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

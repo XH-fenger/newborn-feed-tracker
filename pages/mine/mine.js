@@ -7,33 +7,20 @@ var exporter = require('../../utils/export.js');
 var share = require('../../utils/share.js');
 var T = require('../../utils/time.js');
 
-var THEME_LIST = [
-  { k: 'indigo', name: '靛蓝', dot: 'linear-gradient(135deg,#4149C4,#6F79E8)' },
-  { k: 'mint', name: '晨雾青', dot: 'linear-gradient(135deg,#0A7A70,#189F92)' },
-  { k: 'sun', name: '暖阳橘', dot: 'linear-gradient(135deg,#A8500F,#D97427)' },
-  { k: 'berry', name: '莓果粉', dot: 'linear-gradient(135deg,#B03A75,#DE6BA6)' }
-];
-var INTERVAL_OPTS = [90, 120, 150, 180, 210, 240];
-var INTERVAL_TXT = ['1.5 小时', '2 小时', '2.5 小时', '3 小时', '3.5 小时', '4 小时'];
-var NIGHT_OPTS = [180, 210, 240, 300, 360, 420];
-var NIGHT_TXT = ['3 小时', '3.5 小时', '4 小时', '5 小时', '6 小时', '7 小时'];
+var THEME_NAME = { indigo: '靛蓝', mint: '晨雾青', sun: '暖阳橘', berry: '莓果粉' };
 
 Page({
   data: {
     theme: 'indigo',
     dark: false,
+    elder: false,
     sbH: 44,
     navH: 44,
     navBottom: 88,
     capsuleRight: 96,
     ic: {},
-    themes: THEME_LIST,
     profile: { name: '宝宝', meta: '', count: 0, days: 0, daily: 0 },
-    reminderEnabled: true,
-    intervalH: 3,
-    intervalTxt: '3 小时',
-    nightIntervalH: 4,
-    nightIntervalTxt: '4 小时',
+    themeName: '靛蓝',
     todoOpen: 0
   },
 
@@ -43,7 +30,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    var patch = { theme: g.theme, dark: g.dark };
+    var patch = { theme: g.theme, dark: g.dark, elder: !!g.elder };
     var ic = this.buildIcons();
     patch.ic = ic.ic;
     this.setData(patch);
@@ -81,15 +68,11 @@ Page({
       ic: {
         baby: storage.baby().gender === 'F' ? '/assets/avatar-girl.png' : '/assets/avatar-boy.png',
         pen: icons.svg('pen', c.pri, 12, 2.5),
-        bell: icons.svg('bell', c.pri, 19, 2),
-        clock: icons.svg('clock', c.diaper, 19, 2),
         todo: icons.svg('calendar', c.pri, 19, 2),
-        sleep: icons.svg('sleep', c.sleep, 19, 2),
-        moon: icons.svg('moon', c.pri, 19, 2),
+        sliders: icons.svg('sliders', c.sleep, 19, 2),
         down: icons.svg('down', c.growth, 19, 2),
         up: icons.svg('up', c.pri, 19, 2),
-        trash: icons.svg('trash', c.danger, 19, 2),
-        check: icons.svg('check', c.pri, 14, 3.2)
+        trash: icons.svg('trash', c.danger, 19, 2)
       }
     };
   },
@@ -97,19 +80,12 @@ Page({
   refresh: function () {
     var baby = storage.baby();
     var records = storage.records();
-    var s = storage.settings();
     var ms = statsMod.mineStats(records, baby.birthday);
     var gender = baby.gender === 'F' ? '女宝' : '男宝';
     var meta = gender + (baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : ' · 待完善资料');
-    var itv = s.feedInterval || 180;
-    var niv = s.nightFeedInterval || 240;
     this.setData({
       profile: { name: baby.name || '宝宝', meta: meta, count: ms.count, days: ms.days, daily: ms.daily },
-      reminderEnabled: !!s.reminderEnabled,
-      intervalH: Math.round(itv / 60),
-      intervalTxt: (Math.round(itv / 60 * 10) / 10) + ' 小时',
-      nightIntervalH: Math.round(niv / 60),
-      nightIntervalTxt: (Math.round(niv / 60 * 10) / 10) + ' 小时',
+      themeName: THEME_NAME[getApp().globalData.theme] || '靛蓝',
       todoOpen: storage.todos().filter(function (t) { return !t.done; }).length
     });
   },
@@ -123,55 +99,11 @@ Page({
     wx.navigateTo({ url: '/pages/streak/streak' });
   },
 
-  /* ---------- 提醒 ---------- */
-  toggleReminder: function (e) {
-    var v = !this.data.reminderEnabled;
-    storage.saveSetting('reminderEnabled', v);
-    this.setData({ reminderEnabled: v });
-  },
-  pickInterval: function () {
-    var that = this;
-    var cur = (storage.settings().feedInterval || 180) / 60;
-    var txts = INTERVAL_TXT.map(function (t, i) {
-      return INTERVAL_OPTS[i] / 60 === cur ? t + '（当前）' : t;
-    });
-    wx.showActionSheet({
-      itemList: txts,
-      success: function (r) {
-        var v = INTERVAL_OPTS[r.tapIndex];
-        storage.saveSetting('feedInterval', v);
-        that.setData({ intervalH: v / 60, intervalTxt: (v / 60) + ' 小时' });
-      }
-    });
-  },
-  pickNightInterval: function () {
-    var that = this;
-    var cur = (storage.settings().nightFeedInterval || 240) / 60;
-    var txts = NIGHT_TXT.map(function (t, i) {
-      return NIGHT_OPTS[i] / 60 === cur ? t + '（当前）' : t;
-    });
-    wx.showActionSheet({
-      itemList: txts,
-      success: function (r) {
-        var v = NIGHT_OPTS[r.tapIndex];
-        storage.saveSetting('nightFeedInterval', v);
-        that.setData({ nightIntervalH: v / 60, nightIntervalTxt: (v / 60) + ' 小时' });
-      }
-    });
-  },
   goTodo: function () {
     wx.navigateTo({ url: '/pages/todo/todo' });
   },
-  /* ---------- 外观主题 ---------- */
-  onThemePick: function (e) {
-    var k = e.currentTarget.dataset.k;
-    if (k === this.data.theme) { return; }
-    theme.apply(k, this.data.dark);
-    var toast = this.selectComponent('#toast');
-    if (toast) { toast.show('已切换 · ' + theme.THEMES[k].name); }
-  },
-  toggleDark: function () {
-    theme.apply(this.data.theme, !this.data.dark);
+  goSettings: function () {
+    wx.navigateTo({ url: '/pages/settings/settings' });
   },
 
   /* ---------- 数据 ---------- */

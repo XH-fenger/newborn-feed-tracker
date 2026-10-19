@@ -5,6 +5,8 @@ var theme = require('../utils/theme.js');
 var TAB_KEYS = ['home', 'list', 'chart', 'user'];
 var TAB_TEXT = ['首页', '记录', '统计', '我的'];
 var TAB_URLS = ['/pages/index/index', '/pages/record/record', '/pages/stats/stats', '/pages/mine/mine'];
+// 各 Tab 页各有一份底栏。滑块落定前都从这里出发，新页面才能接着滑，而不是跳过去。
+var shown = 0;
 
 Component({
   data: {
@@ -12,6 +14,7 @@ Component({
     glide: false,
     theme: 'indigo',
     dark: false,
+    elder: false,
     tabs: [],
     currentIcon: ''
   },
@@ -33,9 +36,11 @@ Component({
         };
       });
       var sel = this.data.selected;
+      var elder = !!(getApp().globalData && getApp().globalData.elder);
       this.setData({
         theme: t,
         dark: !!dark,
+        elder: elder,
         tabs: tabs,
         currentIcon: tabs[sel] ? tabs[sel].iconOn : ''
       });
@@ -44,16 +49,38 @@ Component({
       n = +n;
       if (n !== n || n < 0 || n > 3) { return; }
       var tabs = this.data.tabs;
-      var icon = (tabs[n] && tabs[n].iconOn) || this.data.currentIcon;
-      if (!this._placed) {
+      var iconOf = function (i) {
+        return (tabs[i] && tabs[i].iconOn) || '';
+      };
+      var from = shown;
+      if (this._placed && this.data.selected === n && from === n) { return; }
+      if (this._animTo === n) { return; }
+      var self = this;
+      var settle = function () {
+        if (self._animTo === n) { shown = n; self._animTo = null; }
+      };
+      if (from === n) {
         this._placed = true;
-        this.setData({ selected: n, glide: false, currentIcon: icon });
-        var self = this;
+        this._animTo = null;
+        shown = n;
+        this.setData({ selected: n, glide: false, currentIcon: iconOf(n) || this.data.currentIcon });
         wx.nextTick(function () { self.setData({ glide: true }); });
         return;
       }
-      if (this.data.selected === n) { return; }
-      this.setData({ selected: n, currentIcon: icon });
+      this._placed = true;
+      this._animTo = n;
+      this.setData({
+        selected: from,
+        glide: false,
+        currentIcon: iconOf(from) || iconOf(n) || this.data.currentIcon
+      });
+      setTimeout(function () {
+        self.setData({ glide: true });
+        wx.nextTick(function () {
+          self.setData({ selected: n, currentIcon: iconOf(n) || self.data.currentIcon });
+          setTimeout(settle, 480);
+        });
+      }, 20);
     },
     onTap: function (e) {
       var n = +e.currentTarget.dataset.i;

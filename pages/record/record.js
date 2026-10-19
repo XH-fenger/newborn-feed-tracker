@@ -77,7 +77,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    var patch = { theme: g.theme, dark: g.dark, navMeta: '今天 · ' + T.fmtCNMD(Date.now()) };
+    var patch = { theme: g.theme, dark: g.dark, elder: !!g.elder, navMeta: '今天 · ' + T.fmtCNMD(Date.now()) };
     var ic = this.buildIcons();
     patch.icCal = ic.icCal;
     patch.icClock = ic.icClock;

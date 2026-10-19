@@ -40,7 +40,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    var patch = { theme: g.theme, dark: g.dark };
+    var patch = { theme: g.theme, dark: g.dark, elder: !!g.elder };
     var ic = this.buildIcons();
     patch.ic = ic.ic;
     this.setData(patch);
@@ -333,9 +333,14 @@ Page({
   goTodo: function () {
     wx.navigateTo({ url: '/pages/todo/todo' });
   },
+  goCalc: function () {
+    wx.navigateTo({ url: '/pages/calc/calc' });
+  },
+  goNoise: function () {
+    wx.navigateTo({ url: '/pages/noise/noise' });
+  },
   toggleDark: function () {
-    var g = getApp().globalData;
-    theme.apply(g.theme, !g.dark);
+    theme.manualToggle();
   },
   onPageScroll: function () {
     if (this.data.openId) { this.setData({ openId: '' }); }

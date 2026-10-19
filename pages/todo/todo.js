@@ -36,7 +36,7 @@ Page({
     var c = theme.current();
     this.setData({
       theme: g.theme,
-      dark: g.dark,
+      dark: g.dark, elder: !!g.elder,
       icBack: icons.svg('back', c.priInk, 17, 2.6),
       icCal: icons.svg('calendar', c.ink3, 17, 1.9),
       icCheck: icons.svg('check', '#FFFFFF', 13, 3),

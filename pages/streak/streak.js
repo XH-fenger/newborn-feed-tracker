@@ -35,7 +35,7 @@ Page({
     var c = theme.current();
     this.setData({
       theme: g.theme,
-      dark: g.dark,
+      dark: g.dark, elder: !!g.elder,
       icBack: icons.svg('back', c.priInk, 17, 2.6)
     });
     theme.syncWindow(g.theme, g.dark);
