@@ -236,43 +236,62 @@ function drawKpis(ctx, x, y, w, kpis) {
   kpis.forEach(function (k, i) {
     var tx = x + i * (tw + gap);
     fillRound(ctx, tx, y, tw, th, 20, k.bg);
+    ctx.textBaseline = 'top';
     ctx.textAlign = 'center';
     ctx.fillStyle = k.c;
     ctx.font = '22px sans-serif';
-    ctx.fillText(k.label, tx + tw / 2, y + 26);
-    ctx.fillStyle = C.ink;
-    ctx.font = 'bold 44px sans-serif';
+    ctx.fillText(k.label, tx + tw / 2, y + 22);
+
     var vs = String(k.v);
+    var numSize = 44;
+    ctx.font = 'bold ' + numSize + 'px sans-serif';
     var vw = ctx.measureText(vs).width;
-    var uw = k.u ? ctx.measureText(' ' + k.u).width : 0;
-    var startX = tx + tw / 2 - (vw + uw) / 2;
+    ctx.font = '22px sans-serif';
+    var uText = k.u ? k.u : '';
+    var uw = uText ? ctx.measureText(uText).width : 0;
+    var gapU = uText ? 6 : 0;
+    while (vw + uw + gapU > tw - 28 && numSize > 28) {
+      numSize -= 2;
+      ctx.font = 'bold ' + numSize + 'px sans-serif';
+      vw = ctx.measureText(vs).width;
+    }
+    var startX = tx + tw / 2 - (vw + uw + gapU) / 2;
+    var base = y + 118;
+    ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
-    ctx.fillText(vs, startX, y + 68);
-    if (k.u) {
+    ctx.fillStyle = C.ink;
+    ctx.font = 'bold ' + numSize + 'px sans-serif';
+    ctx.fillText(vs, startX, base);
+    if (uText) {
       ctx.fillStyle = C.ink2;
       ctx.font = '22px sans-serif';
-      ctx.fillText(' ' + k.u, startX + vw, y + 90);
+      ctx.fillText(uText, startX + vw + gapU, base);
     }
   });
+  ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   return th;
 }
 
 function drawChart(ctx, x, y, w, title, bars) {
+  ctx.textBaseline = 'top';
   ctx.fillStyle = C.ink;
   ctx.font = 'bold 26px sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(title, x, y);
-  var top = y + 52;
+  var valueGap = 28;
+  var top = y + 52 + valueGap;
   var areaH = 150;
   var base = top + areaH;
   var n = bars.length;
-  var slotW = w / n;
+  var slotW = w / Math.max(1, n);
   var barW = Math.min(52, slotW * 0.5);
   var max = 1;
   bars.forEach(function (b) { if (b.v > max) { max = b.v; } });
+  // 柱多时数字会叠在一起：大约每 7 根标一个，今天和最高值始终保留
+  var step = n <= 8 ? 1 : Math.ceil(n / 7);
+  var labelStep = n <= 10 ? 1 : Math.ceil(n / 6);
 
-  // 基线
   ctx.strokeStyle = C.line;
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -280,28 +299,38 @@ function drawChart(ctx, x, y, w, title, bars) {
   ctx.lineTo(x + w, base + 1);
   ctx.stroke();
 
+  var lastVal = -99;
+  var lastLab = -99;
   bars.forEach(function (b, i) {
     var cx = x + slotW * i + slotW / 2;
     var bh = Math.max(b.v > 0 ? 12 : 4, Math.round(b.v / max * areaH));
     var bx = cx - barW / 2;
     fillRound(ctx, bx, base - bh, barW, bh, 7, b.today ? C.feed : 'rgba(65,73,196,0.45)');
-    if (b.v > 0) {
+    var showVal = b.v > 0 && (i % step === 0 || b.today || b.v === max);
+    if (showVal && i - lastVal < 2 && !(b.today || b.v === max)) { showVal = false; }
+    if (showVal) {
       ctx.fillStyle = C.ink2;
       ctx.font = '19px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(String(b.v), cx, base - bh - 28);
+      ctx.fillText(String(b.v), cx, base - bh - valueGap);
+      lastVal = i;
     }
-    ctx.fillStyle = b.today ? C.feed : C.ink3;
-    ctx.font = b.today ? 'bold 19px sans-serif' : '19px sans-serif';
-    ctx.textAlign = 'center';
-    // 30 天时标签太密：每 5 天标一个，并保证今天有标签
-    if (n <= 10 || i % 5 === 0 || (b.today && i > n - 4)) { ctx.fillText(b.label, cx, base + 12); }
+    var showLab = i % labelStep === 0 || b.today;
+    if (showLab && i - lastLab < 2 && !b.today) { showLab = false; }
+    if (showLab) {
+      ctx.fillStyle = b.today ? C.feed : C.ink3;
+      ctx.font = b.today ? 'bold 19px sans-serif' : '19px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.label, cx, base + 14);
+      lastLab = i;
+    }
   });
   ctx.textAlign = 'left';
-  return 52 + areaH + 44; // 图表块总高
+  return 52 + valueGap + areaH + 48;
 }
 
 function drawRows(ctx, x, y, w, rows) {
+  ctx.textBaseline = 'top';
   var rh = 96;
   rows.forEach(function (r, i) {
     if (i > 0) {
@@ -328,16 +357,22 @@ function drawRows(ctx, x, y, w, rows) {
 
     var long = r.v.length > 12;
     var main = long ? (r.v.length > 18 ? r.v.slice(0, 18) + '…' : r.v) : r.v;
-    var uw = r.u ? ctx.measureText(' ' + r.u).width : 0;
+    var valueSize = long ? 23 : 32;
+    ctx.font = '21px sans-serif';
+    var uText = r.u ? String(r.u).replace(/^\s+/, '') : '';
+    var uw = uText ? ctx.measureText(uText).width : 0;
+    ctx.font = 'bold ' + valueSize + 'px sans-serif';
+    var right = x + w - 8;
+    var valueRight = right - (uText ? uw + 8 : 0);
+    var valueTop = cy - valueSize / 2 - 4;
     ctx.fillStyle = C.ink;
-    ctx.font = long ? 'bold 23px sans-serif' : 'bold 32px sans-serif';
     ctx.textAlign = 'right';
-    var rx = x + w - 24 - uw;
-    ctx.fillText(main, rx, cy - (long ? 12 : 18));
-    if (r.u) {
+    ctx.fillText(main, valueRight, valueTop);
+    if (uText) {
       ctx.fillStyle = C.ink2;
       ctx.font = '21px sans-serif';
-      ctx.fillText(' ' + r.u, rx, cy - (long ? 6 : 6));
+      ctx.textAlign = 'left';
+      ctx.fillText(uText, valueRight + 8, valueTop + valueSize - 21);
     }
     ctx.textAlign = 'left';
     y += rh;
@@ -347,36 +382,45 @@ function drawRows(ctx, x, y, w, rows) {
 
 // 环比条（周报/月报）
 function drawCompare(ctx, x, y, w, title, items) {
+  ctx.textBaseline = 'top';
   ctx.fillStyle = C.ink;
   ctx.font = 'bold 26px sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(title, x, y);
-  var py = y + 40, ph = 74;
+  var py = y + 44, ph = 112;
   fillRound(ctx, x, py, w, ph, 16, '#F6F8FC');
-  var n = items.length;
-  var cw = w / items.length;
+  var n = Math.max(1, items.length);
+  var cw = w / n;
   items.forEach(function (it, i) {
-    var cx = x + cw * i + 18;
+    var cx = x + cw * i + 16;
+    var maxW = cw - 28;
     if (i > 0) {
       ctx.strokeStyle = C.line;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(x + cw * i, py + 14);
-      ctx.lineTo(x + cw * i, py + ph - 14);
+      ctx.moveTo(x + cw * i, py + 16);
+      ctx.lineTo(x + cw * i, py + ph - 16);
       ctx.stroke();
     }
     ctx.textAlign = 'left';
     ctx.fillStyle = C.ink3;
     ctx.font = '18px sans-serif';
-    ctx.fillText(it.k, cx, py + 12);
+    ctx.fillText(fitText(ctx, it.k, maxW), cx, py + 16);
     ctx.fillStyle = it.dir === 'up' ? '#C46A12' : (it.dir === 'down' ? '#2C6FE0' : C.ink2);
-    ctx.font = 'bold 25px sans-serif';
-    ctx.fillText(it.txt, cx, py + 33);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(fitText(ctx, it.txt, maxW), cx, py + 44);
     ctx.fillStyle = C.ink3;
     ctx.font = '16px sans-serif';
-    ctx.fillText(it.prev + ' → ' + it.cur, cx, py + 60);
+    ctx.fillText(fitText(ctx, it.prev + ' → ' + it.cur, maxW), cx, py + 78);
   });
-  return 40 + ph;
+  return 44 + ph;
+}
+
+function fitText(ctx, text, maxW) {
+  var s = String(text || '');
+  if (ctx.measureText(s).width <= maxW) { return s; }
+  while (s.length > 1 && ctx.measureText(s + '…').width > maxW) { s = s.slice(0, -1); }
+  return s + '…';
 }
 
 // 周报 / 月报版式
@@ -397,11 +441,9 @@ function drawReport(ctx, w, h, data) {
   var y = cardY + 28 + 200 + 26;
   drawKpis(ctx, inX, y, inW, data.kpis);
   y += 148 + 40;
-  drawChart(ctx, inX, y, inW, data.chartTitle, data.bars);
-  y += 52 + 150 + 44 + 26;
+  y += drawChart(ctx, inX, y, inW, data.chartTitle, data.bars) + 26;
   if (data.compare && data.compare.length) {
-    drawCompare(ctx, inX, y, inW, data.compareTitle, data.compare);
-    y += 40 + 74 + 26;
+    y += drawCompare(ctx, inX, y, inW, data.compareTitle, data.compare) + 26;
   }
   drawRows(ctx, inX, y, inW, data.rows);
 
@@ -432,8 +474,7 @@ function draw(ctx, w, h, data) {
   var y = cardY + 28 + 200 + 26;
   drawKpis(ctx, inX, y, inW, data.kpis);
   y += 148 + 40;
-  drawChart(ctx, inX, y, inW, data.chartTitle, data.bars);
-  y += 52 + 150 + 44 + 26;
+  y += drawChart(ctx, inX, y, inW, data.chartTitle, data.bars) + 26;
   drawRows(ctx, inX, y, inW, data.rows);
 
   ctx.fillStyle = C.ink3;
@@ -445,11 +486,9 @@ function draw(ctx, w, h, data) {
 
 // 卡片总高：pad*2 + header(28+200) + kpi(26+148) + gap40 + chart(52+150+44) + gap26 + rows*96 + footer余量
 function layoutHeight(data) {
-  if (data && data.kind === 'report') {
-    var hasCmp = data.compare && data.compare.length ? (40 + 74 + 26) : 0;
-    return 64 + 228 + 174 + 40 + 246 + 26 + hasCmp + data.rows.length * 96 + 60;
-  }
-  return 64 + 228 + 174 + 40 + 246 + 26 + data.rows.length * 96 + 60;
+  var chartH = 52 + 28 + 150 + 48;
+  var cmpH = data && data.kind === 'report' && data.compare && data.compare.length ? (44 + 112 + 26) : 0;
+  return 64 + 228 + 174 + 40 + chartH + 26 + cmpH + data.rows.length * 96 + 72;
 }
 
 // 生成临时图片（回调：cb(err, tempFilePath)，保证有且仅有一次回调）

@@ -114,7 +114,7 @@ Page({
     var records = storage.records();
     var ms = statsMod.mineStats(records, baby.birthday);
     var gender = baby.gender === 'F' ? '女宝' : '男宝';
-    var meta = gender + (baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : ' · 待完善资料');
+    var meta = gender + (baby.preterm ? ' · 早产' : '') + (baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : ' · 待完善资料');
     this.setData({
       profile: { name: baby.name || '宝宝', meta: meta, count: ms.count, days: ms.days, daily: ms.daily },
       themeName: THEME_NAME[getApp().globalData.theme] || '靛蓝',

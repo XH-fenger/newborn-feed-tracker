@@ -163,7 +163,7 @@
       <view class="ch-h">
         <view>
           <view class="h3">{{growth.metricName}}成长曲线</view>
-          <view class="sub">对照 WHO 儿童生长标准（0-24 月）</view>
+          <view class="sub">{{growth.sub}}</view>
         </view>
         <view class="chip" wx:if="{{growth.has}}">{{growth.chip}}</view>
       </view>

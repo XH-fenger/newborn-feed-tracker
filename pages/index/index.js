@@ -100,7 +100,7 @@ Page({
 
     var gender = baby.gender === 'F' ? '女宝' : '男宝';
     var bd = baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : '';
-    var heroMeta = gender + bd;
+    var heroMeta = gender + (baby.preterm ? ' · 早产' : '') + bd;
 
     var feedRows = records.filter(function (r) { return r.type === 'feed'; });
     var lf = feedRows.length ? feedRows[0] : null;

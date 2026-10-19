@@ -188,6 +188,7 @@ Page({
     var metricUnit = (metric === 'height' || metric === 'head') ? 'cm' : 'kg';
     var birthVal = metric === 'weight' ? baby.birthWeight : (metric === 'height' ? baby.birthHeight : baby.birthHead);
     var gs = statsMod.growthSeriesMetric(records, metric, birthVal > 0 ? birthVal : 0);
+    var preterm = !!baby.preterm;
     var babyPoints = gs.map(function (p) {
       var m = (p.key === 'birth') ? 0 : who.monthsFromDays(T.ageDays(baby.birthday, p.time));
       return { m: m, v: p.v, key: p.key, time: p.time };
@@ -198,11 +199,16 @@ Page({
     var assess = inRng ? who.assess(baby.gender, metric, lastP.m, lastP.v) : null;
     var pctText = assess ? ('约 P' + assess.pct + ' · ' + assess.zone)
       : (lastP && baby.birthday ? '超出参考范围（0-24月）' : '');
+    if (preterm && pctText) { pctText = '早产，按实际月龄参照 · ' + pctText; }
+    var growthSub = preterm
+      ? '已标记早产。曲线仍是 WHO 足月标准，按实际月龄对照，仅供参考'
+      : '对照 WHO 儿童生长标准（0-24 月）';
     var growth = {
       has: babyPoints.length >= 1,
       metric: metric, metricName: metricName,
       chip: lastP ? (lastP.v + ' ' + metricUnit) : '',
       pctText: pctText,
+      sub: growthSub,
       kpis: [
         { v: lastP ? lastP.v : '-', u: metricUnit, k: '当前' + metricName },
         { v: assess ? 'P' + assess.pct : '-', u: '', k: '百分位' },
@@ -481,7 +487,7 @@ Page({
       } else if (seg === 'growth') {
         o.color = c.growth;
         o.who = that.data.growthShowWho ? that.data.growthWho : [];
-        o.babyPoints = that.data.growth.points || [];
+        o.babyPoints = (that.data.growth.points || []).filter(function (p) { return p.m != null && p.m >= 0; });
         o.maxMonths = that.data.growthMaxM || 24;
         o.xLabels = [{ m: 0, t: '0' }, { m: 6, t: '6月' }, { m: 12, t: '12月' }, { m: 18, t: '18月' }, { m: 24, t: '24月' }];
         charts.drawGrowth(ctx, cv, w, h, o);
