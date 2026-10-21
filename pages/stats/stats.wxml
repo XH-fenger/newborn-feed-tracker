@@ -167,7 +167,8 @@
         </view>
         <view class="chip" wx:if="{{growth.has}}">{{growth.chip}}</view>
       </view>
-      <view class="seg-inline gseg" wx:if="{{growth.has}}">
+      <!-- 指标切换始终展示：当前指标无数据时也要能切回有数据的指标 -->
+      <view class="seg-inline gseg">
         <view class="si {{growthMetric==='weight'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="weight" bindtap="onGrowthMetric">体重</view>
         <view class="si {{growthMetric==='height'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="height" bindtap="onGrowthMetric">身高</view>
         <view class="si {{growthMetric==='head'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="head" bindtap="onGrowthMetric">头围</view>
@@ -195,8 +196,8 @@
         </view>
       </block>
       <view wx:else class="empty">
-        <view class="et1">暂无成长数据</view>
-        <view class="et2">在「宝宝资料」填写出生体重，并记录测量值</view>
+        <view class="et1">暂无{{growth.metricName}}数据</view>
+        <view class="et2">记录{{growth.metricName}}测量值后，这里会出现成长曲线</view>
       </view>
     </view>
 

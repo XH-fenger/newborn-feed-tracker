@@ -18,7 +18,7 @@
         <text class="chev">›</text>
       </view>
       <view class="profile-stats">
-        <view class="pstat"><b>{{profile.count}}<small>条</small></b><span>累计记录</span></view>
+        <view class="pstat" hover-class="hv-pstat" hover-stay-time="60" bindtap="goHistory" aria-role="button" aria-label="查看记录"><b>{{profile.count}}<small>条</small></b><span>累计记录</span></view>
         <view class="pstat" hover-class="hv-pstat" hover-stay-time="60" bindtap="goStreak"><b>{{profile.days}}<small>天</small></b><span>已坚持</span></view>
         <view class="pstat"><b>{{profile.daily}}<small>条</small></b><span>日均</span></view>
       </view>

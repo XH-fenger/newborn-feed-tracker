@@ -11,8 +11,9 @@ var THEME_LIST = [
 ];
 var INTERVAL_OPTS = [90, 120, 150, 180, 210, 240];
 var INTERVAL_TXT = ['1.5 小时', '2 小时', '2.5 小时', '3 小时', '3.5 小时', '4 小时'];
-var NIGHT_OPTS = [180, 210, 240, 300, 360, 420];
-var NIGHT_TXT = ['3 小时', '3.5 小时', '4 小时', '5 小时', '6 小时', '7 小时'];
+// showActionSheet 最多 6 项
+var NIGHT_OPTS = [120, 180, 210, 240, 300, 360];
+var NIGHT_TXT = ['2 小时', '3 小时', '3.5 小时', '4 小时', '5 小时', '6 小时'];
 var THEME_NAME = { indigo: '靛蓝', mint: '晨雾青', sun: '暖阳橘', berry: '莓果粉' };
 
 Page({
