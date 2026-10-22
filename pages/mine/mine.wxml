@@ -118,7 +118,10 @@
       </view>
     </view>
 
-    <view class="foot anim">喂养记录 v1.0.0<br />数据全部保存在本机，不上传云端</view>
+    <view class="foot anim">
+      喂养记录 v1.0.0<br />数据全部保存在本机，不上传云端<br />
+      <text class="icp" hover-class="hv-icp" hover-stay-time="60" bindtap="openBeian">陕ICP备2024035795号-2</text>
+    </view>
   </view>
 
   <!-- 推荐给朋友弹窗，与上面入口一起恢复

@@ -210,6 +210,23 @@ Page({
   closeFeedback: function () { this.setData({ fbOpen: false }); },
   noop: function () {},
 
+  openBeian: function () {
+    var url = 'https://beian.miit.gov.cn/';
+    var toast = this.selectComponent('#toast');
+    if (typeof wx.openUrl === 'function') {
+      wx.openUrl({ url: url });
+      return;
+    }
+    wx.setClipboardData({
+      data: url,
+      success: function () {
+        try { wx.hideToast(); } catch (err) { }
+        if (toast) { toast.show('备案查询链接已复制'); }
+      }
+    });
+  },
+
+
   copyFeedback: function (e) {
     var k = e.currentTarget.dataset.k;
     var text = k === 'mail' ? FB_MAIL : FB_WX;

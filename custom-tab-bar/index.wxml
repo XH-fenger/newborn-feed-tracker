@@ -1,6 +1,6 @@
 <view class="tb t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
   <view class="sheet"></view>
-  <view class="glide g{{selected}} {{glide ? 'anim' : ''}}" aria-hidden="true">
+  <view class="glide g{{selected}} {{glide ? 'anim' : ''}} {{spanClass}} {{pop ? 'pop' : ''}}" aria-hidden="true">
     <view class="bump">
       <view class="curve curve-l"></view>
       <view class="curve curve-r"></view>
@@ -11,10 +11,13 @@
     <view
       wx:for="{{tabs}}"
       wx:key="text"
-      class="tab {{selected === index ? 'on' : ''}}"
+      class="tab {{selected === index ? 'on' : ''}} {{pressed === index ? 'press' : ''}}"
       hover-class="hv-tab"
-      hover-stay-time="100"
+      hover-stay-time="80"
       data-i="{{index}}"
+      bindtouchstart="onPressStart"
+      bindtouchend="onPressEnd"
+      bindtouchcancel="onPressEnd"
       bindtap="onTap"
       aria-role="tab"
       aria-selected="{{selected === index}}"
