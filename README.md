@@ -2,6 +2,14 @@
 
 本地优先（无后端）的新生儿喂养记录小程序。数据全部存储于设备本地（`wx.setStorageSync`），支持导出 JSON 备份与导入恢复。UI 完整复刻已评审定稿的 HTML 原型（Soft UI Evolution · 4 主题 · 暗黑模式 · iOS 交互风格）。
 
+## 体验小程序
+
+微信扫码，或打开微信搜一搜「**小芽拾光记**」：
+
+<p align="center">
+  <img src="docs/miniprogram-promo.png" width="420" alt="小芽拾光记微信小程序" />
+</p>
+
 ## 快速运行
 
 1. 打开 **微信开发者工具** → 项目 → 导入项目
@@ -88,3 +96,13 @@ newborn-feed-tracker/
 - 开发者工具模拟器不支持 `shareFileMessage` 与部分震动 API——导出会走剪贴板兜底，震动需真机验证
 - 主题/暗黑为设备偏好：导入数据不覆盖本机当前外观选择
 - 提醒为应用内触发（进入首页时检查）；小程序退到后台无法主动弹闹钟，属平台限制
+
+## 支持一下
+
+如果「小芽拾光记」对你有帮助，欢迎：
+
+- ⭐ **Star** 本仓库，让更多新手爸妈看见
+- 🍴 **Fork** 后按自家习惯二次开发或定制
+- 💬 提 [Issue](https://github.com/XH-fenger/newborn-feed-tracker/issues) 反馈问题，或发 PR 一起改进
+
+仓库地址：[GitHub](https://github.com/XH-fenger/newborn-feed-tracker) · [Gitee](https://gitee.com/fengger1102/newborn-feed-tracker)
