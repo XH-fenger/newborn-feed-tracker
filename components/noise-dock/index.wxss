@@ -1,0 +1,77 @@
+@import "../../theme.wxss";
+
+.dock {
+  position: fixed;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  font-family: var(--font);
+}
+.dock.right { right: 0; }
+.dock.left { left: 0; flex-direction: row-reverse; }
+
+.dock-ear {
+  width: 44px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card);
+  border: 1px solid var(--line2);
+  box-shadow: var(--sh2);
+}
+.dock.right .dock-ear {
+  border-radius: 24px 0 0 24px;
+  border-right: 0;
+}
+.dock.left .dock-ear {
+  border-radius: 0 24px 24px 0;
+  border-left: 0;
+}
+.dock-note { width: 18px; height: 18px; }
+.dock.elder .dock-note { width: 22px; height: 22px; }
+
+.dock-panel {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 4px 0 14px;
+  background: var(--card);
+  border: 1px solid var(--line2);
+  box-shadow: var(--sh2);
+}
+.dock.open .dock-panel { display: flex; }
+.dock.right .dock-panel {
+  border-right: 0;
+  border-radius: 24px 0 0 24px;
+  margin-right: -1px;
+  padding-right: 8px;
+}
+.dock.left .dock-panel {
+  border-left: 0;
+  border-radius: 0 24px 24px 0;
+  margin-left: -1px;
+  padding-left: 8px;
+  padding-right: 14px;
+}
+.dock.right.open .dock-ear { box-shadow: none; border-left: 0; border-radius: 0; }
+.dock.left.open .dock-ear { box-shadow: none; border-right: 0; border-radius: 0; }
+
+.dock-name {
+  max-width: 96px;
+  min-height: 44px;
+  display: flex; align-items: center;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  line-height: 1.2;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.dock-btn {
+  min-width: 52px; height: 44px; padding: 0 12px;
+  border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff;
+  background: linear-gradient(160deg, var(--g1), var(--g2));
+}
+.dock.elder .dock-ear,
+.dock.elder .dock-panel { height: 52px; }
+.dock.elder .dock-name,
+.dock.elder .dock-btn { font-size: 16px; }
+.dock.elder .dock-btn { height: 48px; }

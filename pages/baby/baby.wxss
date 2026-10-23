@@ -1,2 +1,30 @@
-/* 宝宝资料页专属：无（公共样式见 app.wxss） */
 .ph { color: var(--ink3); font-weight: 400; }
+
+.baby-page .page-body > .sec:first-child { margin-top: 8px; }
+.baby-page .flabel-row { margin-bottom: 9px; }
+.baby-page .flabel-row .flabel { margin-bottom: 0; }
+
+.pair { display: flex; gap: 12px; }
+.choice { flex: 1; min-width: 0; }
+.baby-page .seg-inline .si { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+.baby-page .fld .fhint { margin: 8px 0 0; }
+
+.meas-lead { padding: 14px 16px 0; font-size: 12px; font-weight: 500; color: var(--ink3); line-height: 1.45; }
+.meas { display: flex; }
+.meas .fld { flex: 1; min-width: 0; padding-left: 10px; padding-right: 10px; }
+.meas .fld + .fld::before { left: 0; right: 0; display: none; }
+.meas .flabel { text-align: center; }
+.meas .tx { padding: 0 6px; text-align: center; font-variant-numeric: tabular-nums; }
+.meas .ferr { text-align: center; }
+
+.baby-page .tx.bad { box-shadow: inset 0 0 0 1.5px var(--danger); }
+
+.page.elder .meas { flex-direction: column; }
+.page.elder .meas .fld { padding-left: 16px; padding-right: 16px; }
+.page.elder .meas .fld + .fld::before { display: block; left: 16px; right: 16px; }
+.page.elder .meas .flabel,
+.page.elder .meas .tx,
+.page.elder .meas .ferr { text-align: left; }
+.page.elder .meas .tx { padding: 0 14px; }
+.page.elder .meas-lead { font-size: 15px; }
+.page.elder .pair { flex-direction: column; gap: 14px; }

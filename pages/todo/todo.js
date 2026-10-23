@@ -36,7 +36,7 @@ Page({
     var c = theme.current();
     this.setData({
       theme: g.theme,
-      dark: g.dark,
+      dark: g.dark, elder: !!g.elder,
       icBack: icons.svg('back', c.priInk, 17, 2.6),
       icCal: icons.svg('calendar', c.ink3, 17, 1.9),
       icCheck: icons.svg('check', '#FFFFFF', 13, 3),
@@ -89,7 +89,7 @@ Page({
     if (diff <= 0) { daysText = '已逾期 ' + (-diff) + ' 天'; }
     else if (diff === 1) { daysText = '明天'; }
     else { daysText = diff + ' 天后'; }
-    return { title: best.title, when: T.fmtMD(best.due), daysText: daysText };
+    return { id: best.id, title: best.title, when: T.fmtMD(best.due), daysText: daysText };
   },
 
   refresh: function () {

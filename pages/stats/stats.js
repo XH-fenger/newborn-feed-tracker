@@ -38,6 +38,7 @@ Page({
     dayKey: '',
     dayTitle: '',
     dayRows: [],
+    scrollH: 500,
     ic: {},
     openId: '',
     rangeMode: '7',
@@ -48,7 +49,9 @@ Page({
     growthMetric: 'weight',
     growthWho: [],
     growthShowWho: false,
-    growthMaxM: 24
+    growthMaxM: 24,
+    cmp: { has: false, n: 0, items: [] },
+    cmpOpen: false
   },
 
   onLoad: function () {
@@ -57,7 +60,12 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    this.setData({ theme: g.theme, dark: g.dark });
+    this.setData({
+      theme: g.theme,
+      dark: g.dark,
+      elder: !!g.elder,
+      scrollH: this.scrollBox(!!g.elder)
+    });
     if (typeof this.getTabBar === 'function') {
       var tb = this.getTabBar();
       if (tb) { tb.sync(g.theme, g.dark); tb.setSelected(2); }
@@ -79,13 +87,28 @@ Page({
         sleep19: icons.svg('sleep', c.sleep, 19, 2),
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
-        temp19: icons.svg('temp', c.temp, 19, 2)
+        temp19: icons.svg('temp', c.temp, 19, 2),
+        bath19: icons.svg('bath', c.bath, 19, 2)
       }
     };
   },
 
-  onPageScroll: function (e) {
-    var sc = e.scrollTop > 6;
+  scrollBox: function (elder) {
+    var m = require('../../utils/nav.js').metrics();
+    var top = m.sbH + m.navH + 79;
+    var info = {};
+    try { info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync(); } catch (e) { }
+    var winH = info.windowHeight || 667;
+    var safeBottom = 0;
+    if (info.safeArea && info.screenHeight) {
+      safeBottom = Math.max(0, info.screenHeight - info.safeArea.bottom);
+    }
+    var h = Math.round(winH - top - ((elder ? 108 : 96) + safeBottom));
+    return h > 200 ? h : 200;
+  },
+
+  onBodyScroll: function (e) {
+    var sc = e.detail.scrollTop > 6;
     if (sc !== this.data.navSc) {
       this.setData({ navSc: sc });
     }
@@ -165,6 +188,7 @@ Page({
     var metricUnit = (metric === 'height' || metric === 'head') ? 'cm' : 'kg';
     var birthVal = metric === 'weight' ? baby.birthWeight : (metric === 'height' ? baby.birthHeight : baby.birthHead);
     var gs = statsMod.growthSeriesMetric(records, metric, birthVal > 0 ? birthVal : 0);
+    var preterm = !!baby.preterm;
     var babyPoints = gs.map(function (p) {
       var m = (p.key === 'birth') ? 0 : who.monthsFromDays(T.ageDays(baby.birthday, p.time));
       return { m: m, v: p.v, key: p.key, time: p.time };
@@ -175,11 +199,16 @@ Page({
     var assess = inRng ? who.assess(baby.gender, metric, lastP.m, lastP.v) : null;
     var pctText = assess ? ('约 P' + assess.pct + ' · ' + assess.zone)
       : (lastP && baby.birthday ? '超出参考范围（0-24月）' : '');
+    if (preterm && pctText) { pctText = '早产，按实际月龄参照 · ' + pctText; }
+    var growthSub = preterm
+      ? '已标记早产。曲线仍是 WHO 足月标准，按实际月龄对照，仅供参考'
+      : '对照 WHO 儿童生长标准（0-24 月）';
     var growth = {
       has: babyPoints.length >= 1,
       metric: metric, metricName: metricName,
       chip: lastP ? (lastP.v + ' ' + metricUnit) : '',
       pctText: pctText,
+      sub: growthSub,
       kpis: [
         { v: lastP ? lastP.v : '-', u: metricUnit, k: '当前' + metricName },
         { v: assess ? 'P' + assess.pct : '-', u: '', k: '百分位' },
@@ -243,12 +272,37 @@ Page({
     };
 
     var chartRows = { feed: feed.rows, diaper: diaper.rows, sleep: sleep.rows, growth: growth.rows, temp: temp.points }[this.data.seg] || [];
+
+    /* —— 环比：较上一等长周期 —— */
+    var cmpRaw = statsMod.comparePeriods(records, days[0].ts, days[days.length - 1].ts);
+    var cmp = { has: false, n: 0, items: [] };
+    if (cmpRaw.has) {
+      function chip(k, pct, curTxt, prevTxt, segKey) {
+        var dir = 'flat', txt = '持平';
+        if (pct === null) { dir = 'up'; txt = '新增'; }
+        else if (pct > 0) { dir = 'up'; txt = '↑ ' + pct + '%'; }
+        else if (pct < 0) { dir = 'down'; txt = '↓ ' + Math.abs(pct) + '%'; }
+        return { k: k, seg: segKey, dir: dir, txt: txt, cur: curTxt, prev: prevTxt };
+      }
+      cmp = {
+        has: true, n: cmpRaw.n,
+        items: [
+          chip('日均奶量', cmpRaw.pct.ml, cmpRaw.avgCur.ml + ' ml', cmpRaw.avgPrev.ml + ' ml', 'feed'),
+          chip('日均喂养', cmpRaw.pct.feed, cmpRaw.avgCur.feed + ' 次', cmpRaw.avgPrev.feed + ' 次', 'feed'),
+          chip('日均尿布', cmpRaw.pct.diaper, cmpRaw.avgCur.diaper + ' 次', cmpRaw.avgPrev.diaper + ' 次', 'diaper'),
+          chip('日均睡眠', cmpRaw.pct.sleep, cmpRaw.avgCur.sleepH + ' h', cmpRaw.avgPrev.sleepH + ' h', 'sleep')
+        ]
+      };
+    }
+
+    var that = this;
     this.setData({
       navMeta: navMeta, feed: feed, diaper: diaper, sleep: sleep, growth: growth, temp: temp, chartRows: chartRows,
-      growthWho: whoCurve, growthShowWho: inRng
+      growthWho: whoCurve, growthShowWho: inRng, cmp: cmp
+    }, function () {
+      if (that.data.dayOn && that.data.dayKey) { that.openDay(that.data.dayKey); }
+      setTimeout(function () { that.drawChart(); }, 40);
     });
-    if (this.data.dayOn && this.data.dayKey) { this.openDay(this.data.dayKey); }
-    this.drawChart();
   },
 
   /* ---------- 区间切换（#6） ---------- */
@@ -288,6 +342,20 @@ Page({
     this.refresh();
     var that = this;
     setTimeout(function () { that.drawChart(); }, 60);
+  },
+
+  toggleCmp: function () {
+    this.setData({ cmpOpen: !this.data.cmpOpen });
+  },
+
+  onCmpTap: function (e) {
+    var k = e.currentTarget.dataset.k;
+    var i = -1;
+    for (var n = 0; n < SEGS.length; n++) {
+      if (SEGS[n].k === k) { i = n; break; }
+    }
+    if (i < 0 || k === this.data.seg) { return; }
+    this.onSegTap({ currentTarget: { dataset: { k: k, i: i } } });
   },
 
   onSegTap: function (e) {
@@ -376,9 +444,18 @@ Page({
   genShare: function () {
     var that = this;
     if (this._sharing) { return; }
+    wx.showActionSheet({
+      itemList: ['今日摘要', '近 7 天周报', '近 30 天月报'],
+      success: function (r) { that.doShareIndex(r.tapIndex); }
+    });
+  },
+  doShareIndex: function (idx) {
+    var that = this;
+    if (this._sharing) { return; }
     this._sharing = true;
     this.setData({ sharing: true });
-    share.share(share.dailyData(), function (err) {
+    var data = idx === 2 ? share.reportData(30) : (idx === 1 ? share.reportData(7) : share.dailyData());
+    share.share(data, function (err) {
       that._sharing = false;
       that.setData({ sharing: false });
       var msg = err ? ((err && err.errMsg) || '生成失败') : '已生成摘要';
@@ -410,7 +487,7 @@ Page({
       } else if (seg === 'growth') {
         o.color = c.growth;
         o.who = that.data.growthShowWho ? that.data.growthWho : [];
-        o.babyPoints = that.data.growth.points || [];
+        o.babyPoints = (that.data.growth.points || []).filter(function (p) { return p.m != null && p.m >= 0; });
         o.maxMonths = that.data.growthMaxM || 24;
         o.xLabels = [{ m: 0, t: '0' }, { m: 6, t: '6月' }, { m: 12, t: '12月' }, { m: 18, t: '18月' }, { m: 24, t: '24月' }];
         charts.drawGrowth(ctx, cv, w, h, o);

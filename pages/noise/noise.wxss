@@ -1,0 +1,131 @@
+.noise-page { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+
+.noise-page .noise-hero { overflow: visible; }
+.noise-hero { padding: 22px 16px 8px; text-align: center; }
+.noise-kicker {
+  font-size: 12px; font-weight: 700; letter-spacing: .4px; color: var(--priInk);
+}
+.noise-name {
+  margin-top: 6px;
+  font-size: 28px; font-weight: 800; letter-spacing: -.4px; line-height: 1.15; color: var(--ink);
+}
+.noise-status {
+  margin-top: 6px;
+  font-size: 13px; font-weight: 600; color: var(--ink2); line-height: 1.4;
+}
+.noise-stage {
+  position: relative;
+  width: 92px; height: 92px;
+  margin: 28px auto 22px;
+}
+.noise-rip {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  pointer-events: none;
+}
+.noise-rip-c {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  border: 2px solid var(--pri);
+  opacity: 0;
+  animation: noiseRip 2.4s ease-out infinite;
+}
+.noise-rip-c.d2 { animation-delay: .8s; }
+.noise-rip-c.d3 { animation-delay: 1.6s; }
+@keyframes noiseRip {
+  0% { transform: scale(1); opacity: .42; }
+  100% { transform: scale(1.72); opacity: 0; }
+}
+.noise-play {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; color: #fff;
+  background: linear-gradient(160deg, var(--g1), var(--g2));
+  box-shadow: var(--shPri), inset 0 1px 0 rgba(255, 255, 255, .28);
+}
+.noise-play.on {
+  background: var(--fill);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line2);
+}
+.noise-vol {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 16px; padding: 0 2px 4px; text-align: left;
+}
+.noise-vol-k { flex: none; font-size: 13px; font-weight: 700; color: var(--ink2); }
+.noise-slider { flex: 1; margin: 0; }
+.noise-vol-n {
+  flex: none; width: 32px; text-align: right;
+  font-size: 15px; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.noise-err { margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--danger); }
+
+.noise-grid-card { padding-bottom: 4px; }
+.noise-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 12px;
+}
+.noise-item {
+  min-height: 48px; padding: 10px 8px; border-radius: 14px;
+  background: var(--fill); color: var(--ink2);
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.noise-item.on {
+  background: var(--priSoft); color: var(--priInk);
+  box-shadow: inset 0 0 0 1.5px var(--pri);
+}
+
+.noise-times {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.noise-time {
+  min-height: 40px; padding: 8px 4px;
+  border-radius: 12px; background: var(--fill);
+  font-size: 13px; font-weight: 700; color: var(--ink2);
+  white-space: nowrap;
+  display: flex; align-items: center; justify-content: center;
+}
+.noise-time:last-child { grid-column: 1 / -1; }
+.noise-time.on {
+  background: var(--priSoft); color: var(--priInk);
+  box-shadow: inset 0 0 0 1.5px var(--pri);
+}
+
+.page.elder .noise-name { font-size: 34px; }
+.page.elder .noise-status,
+.page.elder .noise-vol-k,
+.page.elder .noise-item,
+.page.elder .noise-time { font-size: 17px; }
+.page.elder .noise-stage { width: 104px; height: 104px; }
+.page.elder .noise-play { font-size: 22px; }
+.page.elder .noise-item { min-height: 56px; }
+.page.elder .noise-time { font-size: 15px; min-height: 48px; }
+.noise-foot {
+  margin: 2px 16px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--priSoft);
+}
+.noise-foot-row {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  line-height: 1.45;
+}
+.noise-foot-row + .noise-foot-row { margin-top: 6px; }
+.noise-foot-row::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 6px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--pri);
+}
+.page.elder .noise-foot-row { font-size: 15px; }
+.page.elder .noise-foot-row::before { top: 8px; }

@@ -127,7 +127,7 @@ function csvCell(v) {
 
 function exportCsv() {
   var d = storage.db();
-  var TYPE = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充', temp: '体温' };
+  var TYPE = { feed: '喂养', diaper: '尿布', sleep: '睡眠', growth: '成长', med: '补充', temp: '体温', bath: '洗澡' };
   var header = ['日期', '时间', '类型', '奶量(ml)', '喂养方式', '时长(分)', '尿布类型', '睡眠起止',
     '体重(kg)', '身高(cm)', '头围(cm)', '体温(℃)', '补充剂', '剂量', '备注'];
   var rows = [header];
@@ -138,6 +138,7 @@ function exportCsv() {
     else if (r.type === 'sleep') { row[7] = (r.start ? T.fmtHM(r.start) : '') + ' - ' + (r.end ? T.fmtHM(r.end) : ''); }
     else if (r.type === 'growth') { row[8] = r.weight || ''; row[9] = r.height || ''; row[10] = r.headCirc || ''; }
     else if (r.type === 'temp') { row[11] = r.celsius || ''; }
+    else if (r.type === 'bath') { row[5] = r.duration || ''; }
     else if (r.type === 'med') { row[12] = r.medName || r.medKey || ''; row[13] = r.dose || ''; }
     rows.push(row);
   });

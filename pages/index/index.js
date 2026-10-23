@@ -8,11 +8,13 @@ var schedule = require('../../utils/schedule.js');
 var motion = require('../../utils/motion.js');
 
 var rowsOf = require('../../utils/recordRow.js');
+var repeat = require('../../utils/repeat.js');
 
 Page({
   data: {
     theme: 'indigo',
     dark: false,
+    homeVer: 2,
     sbH: 44,
     navBottom: 88,
     capsuleRight: 96,
@@ -20,7 +22,7 @@ Page({
     baby: { name: '宝宝' },
     heroMeta: '',
     dayChip: '第 1 天',
-    today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0h 0m' },
+    today: { feedCount: 0, feedMl: 0, diaper: 0, sleepText: '0.0 h' },
     todayTemp: {
       am: { empty: true, text: '待测', sub: '建议 8:00', hi: false, lo: false, id: '' },
       pm: { empty: true, text: '待测', sub: '建议 20:00', hi: false, lo: false, id: '' }
@@ -40,7 +42,7 @@ Page({
 
   onShow: function () {
     var g = getApp().globalData;
-    var patch = { theme: g.theme, dark: g.dark };
+    var patch = { theme: g.theme, dark: g.dark, elder: !!g.elder };
     var ic = this.buildIcons();
     patch.ic = ic.ic;
     this.setData(patch);
@@ -83,6 +85,7 @@ Page({
         growth19: icons.svg('growth', c.growth, 19, 2),
         med19: icons.svg('med', c.pri, 19, 2),
         temp19: icons.svg('temp', c.temp, 19, 2),
+        bath19: icons.svg('bath', c.bath, 19, 2),
         todo19: icons.svg('calendar', c.pri, 19, 2),
         empty: icons.svg('list', c.ink3, 44, 1.6)
       }
@@ -97,7 +100,7 @@ Page({
 
     var gender = baby.gender === 'F' ? '女宝' : '男宝';
     var bd = baby.birthday ? ' · 出生 ' + baby.birthday + ' · ' + T.ageText(baby.birthday) : '';
-    var heroMeta = gender + bd;
+    var heroMeta = gender + (baby.preterm ? ' · 早产' : '') + bd;
 
     var feedRows = records.filter(function (r) { return r.type === 'feed'; });
     var lf = feedRows.length ? feedRows[0] : null;
@@ -110,10 +113,11 @@ Page({
         feedCount: t.feedCount,
         feedMl: t.feedMl,
         diaper: t.diaper,
-        sleepText: Math.floor(t.sleepMin / 60) + 'h ' + (t.sleepMin % 60) + 'm'
+        sleepText: (Math.round(t.sleepMin / 6) / 10).toFixed(1) + ' h'
       },
       todayTemp: stats.todayTempView(records),
       hasFeed: !!lf,
+      repeatLabel: lf ? repeat.label(lf) : '',
       rows: this.buildRows(records.slice(0, 3)),
       empty: records.length === 0,
       openId: ''
@@ -249,8 +253,8 @@ Page({
       var cv = res[0].node;
       var dpr = 2;
       try { dpr = wx.getWindowInfo().pixelRatio || 2; } catch (e) { }
-      cv.width = 82 * dpr;
-      cv.height = 82 * dpr;
+      cv.width = 72 * dpr;
+      cv.height = 72 * dpr;
       var ctx = cv.getContext('2d');
       ctx.scale(dpr, dpr);
       that._ringCtx = ctx;
@@ -264,21 +268,47 @@ Page({
     this._ringPct = pct;
     var ctx = this._ringCtx;
     var that = this;
+    // 1：等宽描边。2：细轨道 + 粗进度 + 端点圆头（deftlycreative/progress-ring）
+    var ringVer = 2;
 
     function paint(p) {
-      ctx.clearRect(0, 0, 82, 82);
-      ctx.lineWidth = 6;
+      var cx = 36;
+      var cy = 36;
+      var r = 29;
+      var a0 = -Math.PI / 2;
+      var clamped = Math.min(1, Math.max(0, p));
+      ctx.clearRect(0, 0, 72, 72);
       ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(255,255,255,.26)';
+      if (ringVer === 1) {
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'rgba(255,255,255,.26)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        if (clamped > 0.005) {
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, a0, a0 + Math.PI * 2 * clamped);
+          ctx.stroke();
+        }
+        return;
+      }
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.28)';
       ctx.beginPath();
-      ctx.arc(41, 41, 34, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
-      if (p > 0.005) {
+      if (clamped > 0.005) {
+        var a1 = a0 + Math.PI * 2 * clamped;
+        ctx.lineWidth = 6;
         ctx.strokeStyle = '#FFFFFF';
         ctx.beginPath();
-        var a = -Math.PI / 2;
-        ctx.arc(41, 41, 34, a, a + Math.PI * 2 * Math.min(1, p));
+        ctx.arc(cx, cy, r, a0, a1);
         ctx.stroke();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(cx + r * Math.cos(a1), cy + r * Math.sin(a1), 3.2, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
@@ -333,9 +363,14 @@ Page({
   goTodo: function () {
     wx.navigateTo({ url: '/pages/todo/todo' });
   },
+  goCalc: function () {
+    wx.navigateTo({ url: '/pages/calc/calc' });
+  },
+  goNoise: function () {
+    wx.navigateTo({ url: '/pages/noise/noise' });
+  },
   toggleDark: function () {
-    var g = getApp().globalData;
-    theme.apply(g.theme, !g.dark);
+    theme.manualToggle();
   },
   onPageScroll: function () {
     if (this.data.openId) { this.setData({ openId: '' }); }
@@ -364,6 +399,23 @@ Page({
       refresh: function () { that.refresh(); }
     });
   },
+  // 一键重复上一次喂养（#1）
+  onRepeatFeed: function () {
+    // 防连点：同一时刻重复点击会连写两条一样的记录
+    if (this._repeating) { return; }
+    var lf = this._lastFeed;
+    if (!lf) { return; }
+    var rec = repeat.build(lf, Date.now());
+    if (!rec) { return; }
+    var that = this;
+    this._repeating = true;
+    setTimeout(function () { that._repeating = false; }, 800);
+    storage.addRecord(rec);
+    var toast = this.selectComponent('#toast');
+    if (toast) { toast.show('已按上次记一条喂养'); }
+    this.refresh();
+  },
+
   onNextTap: function () {
     if (!this.data.hasFeed) { this.goAdd(); }
   },

@@ -1,14 +1,13 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page stats-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
-      <view class="nav-mid">{{navMeta}}</view>
+      <view class="nav-mid nav-mid-left">{{navMeta}}</view>
     </view>
   </view>
 
-  <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
-
-    <view class="seg seg-5 anim">
+  <view class="stats-pin" style="top:{{sbH + navH + 9}}px">
+    <view class="seg seg-5">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -18,6 +17,9 @@
         bindtap="onSegTap"
       >{{item.t}}</view>
     </view>
+  </view>
+
+  <scroll-view class="stats-scroll" scroll-y style="top:{{sbH + navH + 79}}px;height:{{scrollH}}px" bindscroll="onBodyScroll">
 
     <!-- ============ 区间（近 7 / 30 天 / 自定义） ============ -->
     <view class="rng anim" wx:if="{{seg !== 'growth'}}">
@@ -30,6 +32,21 @@
         <picker mode="date" value="{{rangeStart}}" bindchange="onRangeStart"><view class="rp">{{rangeStart||'起始日'}}</view></picker>
         <text class="rp-sep">—</text>
         <picker mode="date" value="{{rangeEnd}}" bindchange="onRangeEnd"><view class="rp">{{rangeEnd||'结束日'}}</view></picker>
+      </view>
+    </view>
+
+    <!-- ============ 环比（较上一周期） ============ -->
+    <view class="cmpbar anim {{cmpOpen ? '' : 'shut'}}" wx:if="{{seg !== 'growth' && cmp.has}}">
+      <view class="cmp-h" hover-class="hv-row" hover-stay-time="60" bindtap="toggleCmp">
+        <text>较上一周期（{{cmp.n}} 天 · 日均对比）</text>
+        <text class="cmp-chev {{cmpOpen ? 'open' : ''}}">›</text>
+      </view>
+      <view class="cmp-row" wx:if="{{cmpOpen}}">
+        <view class="cmp-i {{seg === item.seg ? 'on' : ''}}" wx:for="{{cmp.items}}" wx:key="k" hover-class="hv-row" hover-stay-time="60" data-k="{{item.seg}}" bindtap="onCmpTap">
+          <view class="cmp-k">{{item.k}}</view>
+          <view class="cmp-v {{item.dir}}">{{item.txt}}</view>
+          <view class="cmp-s">{{item.prev}} → {{item.cur}}</view>
+        </view>
       </view>
     </view>
 
@@ -146,11 +163,12 @@
       <view class="ch-h">
         <view>
           <view class="h3">{{growth.metricName}}成长曲线</view>
-          <view class="sub">对照 WHO 儿童生长标准（0-24 月）</view>
+          <view class="sub">{{growth.sub}}</view>
         </view>
         <view class="chip" wx:if="{{growth.has}}">{{growth.chip}}</view>
       </view>
-      <view class="seg-inline gseg" wx:if="{{growth.has}}">
+      <!-- 指标切换始终展示：当前指标无数据时也要能切回有数据的指标 -->
+      <view class="seg-inline gseg">
         <view class="si {{growthMetric==='weight'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="weight" bindtap="onGrowthMetric">体重</view>
         <view class="si {{growthMetric==='height'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="height" bindtap="onGrowthMetric">身高</view>
         <view class="si {{growthMetric==='head'?'on':''}}" hover-class="hv-si" hover-stay-time="60" data-k="head" bindtap="onGrowthMetric">头围</view>
@@ -178,8 +196,8 @@
         </view>
       </block>
       <view wx:else class="empty">
-        <view class="et1">暂无成长数据</view>
-        <view class="et2">在「宝宝资料」填写出生体重，并记录测量值</view>
+        <view class="et1">暂无{{growth.metricName}}数据</view>
+        <view class="et2">记录{{growth.metricName}}测量值后，这里会出现成长曲线</view>
       </view>
     </view>
 
@@ -254,10 +272,10 @@
     </view>
 
     <view class="share-bar anim">
-      <view class="share-btn {{sharing ? 'off' : ''}}" hover-class="hv-pill" hover-stay-time="80" bindtap="genShare">{{sharing ? '正在生成…' : '📤 生成今日摘要卡片'}}</view>
+      <view class="share-btn {{sharing ? 'off' : ''}}" hover-class="hv-pill" hover-stay-time="80" bindtap="genShare">{{sharing ? '正在生成…' : '📤 生成摘要 / 周报长图'}}</view>
     </view>
+  </scroll-view>
 
-  </view>
-
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

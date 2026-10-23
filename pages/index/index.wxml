@@ -1,4 +1,4 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page home-v{{homeVer}} t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <!-- Hero：渐变头图 + 日龄 chip -->
   <view class="hero">
@@ -28,7 +28,8 @@
     </view>
   </view>
 
-  <!-- 浮出数据卡（今日 2×2） -->
+  <!-- 布局 v1：紧凑四宫格。homeVer 改回 1 即恢复 -->
+  <block wx:if="{{homeVer === 1}}">
   <view class="today anim">
     <view class="tcell" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
       <view class="tci" style="background:var(--feedS)">
@@ -60,6 +61,29 @@
     </view>
   </view>
 
+  <view class="card card-clip calc-entry anim">
+    <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goCalc">
+      <view class="ric" style="background:var(--feedS)">
+        <image class="ric-ic" src="{{ic.bottle19}}" mode="aspectFit" />
+      </view>
+      <view class="rbody">
+        <view class="rt">奶量计算器</view>
+        <view class="rd">区分母乳和配方奶，可算强化剂克数</view>
+      </view>
+      <text class="chev">›</text>
+    </view>
+    <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="goNoise">
+      <view class="ric" style="background:var(--sleepS)">
+        <image class="ric-ic" src="{{ic.sleep19}}" mode="aspectFit" />
+      </view>
+      <view class="rbody">
+        <view class="rt">白噪音哄睡</view>
+        <view class="rd">吹风机、雨声、海浪，可调音量</view>
+      </view>
+      <text class="chev">›</text>
+    </view>
+  </view>
+
   <view class="tempday anim">
     <view class="tempday-h">
       <text class="tempday-t">今日体温</text>
@@ -79,15 +103,6 @@
     </view>
   </view>
 
-  <view class="fever-banner anim" wx:if="{{fever}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goMed">
-    <view class="fever-ic">🌡️</view>
-    <view class="fever-b">
-      <view class="fever-t">体温偏高，建议记录用药</view>
-      <view class="fever-s">点此在「记录」中补一笔补充剂 / 用药</view>
-    </view>
-    <text class="chev">›</text>
-  </view>
-
   <!-- 下次喂养渐变焦点卡 + 环形进度 -->
   <view class="next anim" hover-class="hv-next" hover-stay-time="80" bindtap="onNextTap">
     <view class="next-l">
@@ -105,9 +120,108 @@
       <canvas type="2d" id="ringCv" class="next-ring-cv"></canvas>
       <view class="rt">
         <b>{{next.nextHM}}</b>
-        <span>{{hasFeed ? '下次建议' : '待记录'}}</span>
+        <span>{{hasFeed ? '下次' : '待记录'}}</span>
       </view>
     </view>
+  </view>
+  </block>
+
+  <!-- 布局 v2：参考 Baby Buddy 仪表盘，上次喂养在前，今日数据一行，工具并排 -->
+  <block wx:else>
+    <view class="next anim" hover-class="hv-next" hover-stay-time="80" bindtap="onNextTap">
+      <view class="next-l">
+        <view class="next-t">距上次喂养</view>
+        <block wx:if="{{hasFeed}}">
+          <view class="next-big">{{next.hh}}<small>时</small>{{next.mm}}<small>分</small></view>
+          <view class="next-s">{{next.sub}}</view>
+        </block>
+        <block wx:else>
+          <view class="next-big">开始记录</view>
+          <view class="next-s">点这里记下第一次喂养</view>
+        </block>
+      </view>
+      <view class="next-ring">
+        <canvas type="2d" id="ringCv" class="next-ring-cv"></canvas>
+        <view class="rt">
+          <b>{{next.nextHM}}</b>
+          <span>{{hasFeed ? '下次' : '待记录'}}</span>
+        </view>
+      </view>
+    </view>
+
+    <view
+      class="repline anim"
+      wx:if="{{hasFeed && repeatLabel}}"
+      hover-class="hv-cell" hover-stay-time="80"
+      bindtap="onRepeatFeed"
+      aria-role="button" aria-label="按上次喂养再记一条"
+    >
+      <text class="repline-ic">↻</text>
+      <text class="repline-t">同上次再记一次</text>
+      <text class="repline-v">{{repeatLabel}}</text>
+    </view>
+
+    <view class="statline anim">
+      <view class="stat" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
+        <b>{{today.feedCount}}</b>
+        <text>喂养</text>
+      </view>
+      <view class="stat" hover-class="hv-cell" hover-stay-time="80" data-type="feed" bindtap="goHistory">
+        <b>{{today.feedMl}}</b>
+        <text>奶量 ml</text>
+      </view>
+      <view class="stat" hover-class="hv-cell" hover-stay-time="80" data-type="diaper" bindtap="goHistory">
+        <b>{{today.diaper}}</b>
+        <text>尿布</text>
+      </view>
+      <view class="stat" hover-class="hv-cell" hover-stay-time="80" data-type="sleep" bindtap="goHistory">
+        <b class="stat-sleep">{{today.sleepText}}</b>
+        <text>睡眠</text>
+      </view>
+    </view>
+
+    <view class="toolgrid anim">
+      <view class="tool" hover-class="hv-cell" hover-stay-time="80" bindtap="goCalc">
+        <view class="tool-ic" style="background:var(--feedS)">
+          <image class="tool-ic-img" src="{{ic.bottle19}}" mode="aspectFit" />
+        </view>
+        <view class="tool-t">奶量计算</view>
+      </view>
+      <view class="tool" hover-class="hv-cell" hover-stay-time="80" bindtap="goNoise">
+        <view class="tool-ic" style="background:var(--sleepS)">
+          <image class="tool-ic-img" src="{{ic.sleep19}}" mode="aspectFit" />
+        </view>
+        <view class="tool-t">白噪音</view>
+      </view>
+    </view>
+
+    <view class="tempday anim">
+      <view class="tempday-h">
+        <text class="tempday-t">今日体温</text>
+        <text class="tempday-sub">早晚各测一次</text>
+      </view>
+      <view class="tempday-row">
+        <view class="tslot {{todayTemp.am.empty ? 'empty' : ''}}" hover-class="hv-cell" hover-stay-time="80" data-slot="am" bindtap="onTempTap">
+          <view class="tslot-k">早测</view>
+          <view class="tslot-v {{todayTemp.am.hi ? 'hi' : ''}} {{todayTemp.am.lo ? 'lo' : ''}}">{{todayTemp.am.text}}<small wx:if="{{!todayTemp.am.empty}}">°C</small></view>
+          <view class="tslot-s">{{todayTemp.am.sub}}</view>
+        </view>
+        <view class="tslot {{todayTemp.pm.empty ? 'empty' : ''}}" hover-class="hv-cell" hover-stay-time="80" data-slot="pm" bindtap="onTempTap">
+          <view class="tslot-k">晚测</view>
+          <view class="tslot-v {{todayTemp.pm.hi ? 'hi' : ''}} {{todayTemp.pm.lo ? 'lo' : ''}}">{{todayTemp.pm.text}}<small wx:if="{{!todayTemp.pm.empty}}">°C</small></view>
+          <view class="tslot-s">{{todayTemp.pm.sub}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view class="fever-banner anim" wx:if="{{fever}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goMed">
+    <view class="fever-ic">🌡️</view>
+    <view class="fever-b">
+      <view class="fever-t">体温偏高，建议记录用药</view>
+      <view class="fever-s">点此在「记录」中补一笔补充剂 / 用药</view>
+    </view>
+    <text class="chev">›</text>
   </view>
 
   <view class="vac-banner anim" wx:if="{{vacCard}}" hover-class="hv-cell" hover-stay-time="80" bindtap="goTodo">
@@ -182,5 +296,6 @@
     </block>
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

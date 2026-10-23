@@ -1,1 +1,90 @@
-/* 我的页专属：无（公共样式见 app.wxss） */
+/* 我的页专属：备案号 / 推荐弹窗与反馈弹窗 */
+
+.icp {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink3);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hv-icp { opacity: .65; }
+.page.elder .icp { font-size: 14px; }
+
+.share-card { text-align: center; }
+.share-card .fb-t,
+.share-card .fb-note { text-align: left; }
+.share-code {
+  width: 196px; height: 196px;
+  margin: 14px auto 0;
+  display: block;
+  background: #fff;
+  border-radius: var(--r-md);
+}
+.share-empty {
+  margin-top: 14px; padding: 16px 12px;
+  background: var(--fill); border-radius: var(--r-md);
+  font-size: 13px; font-weight: 600; color: var(--ink2); line-height: 1.55;
+  text-align: left;
+}
+.share-acts { display: flex; gap: 8px; margin-top: 14px; }
+.share-act {
+  flex: 1; min-height: 44px; margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--fill); color: var(--ink);
+  font-size: 15px; font-weight: 700; line-height: 1.2;
+}
+.share-act-pri { background: var(--pri); color: #fff; }
+.share-act-on { opacity: .82; }
+button.share-act { border: none; }
+button.share-act::after { border: none; }
+.page.elder .share-empty { font-size: 15px; }
+.page.elder .share-act { font-size: 17px; }
+
+/* 反馈弹窗 */
+
+.fb-mask {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 40;
+  background: rgba(14, 26, 25, .45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.fb-card {
+  width: 100%; max-width: 320px;
+  background: var(--card); color: var(--ink);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh2);
+  padding: 18px 16px 8px;
+}
+.fb-t { font-size: 17px; font-weight: 800; letter-spacing: -.2px; }
+.fb-note {
+  margin-top: 8px;
+  font-size: 12px; font-weight: 500; color: var(--ink3); line-height: 1.55;
+}
+.fb-row {
+  margin-top: 12px; min-height: 48px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--fill); border-radius: var(--r-md);
+}
+.fb-k { flex: none; width: 48px; font-size: 13px; font-weight: 700; color: var(--ink2); }
+.fb-v {
+  flex: 1; min-width: 0;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+  letter-spacing: .2px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.fb-copy { flex: none; font-size: 14px; font-weight: 800; color: var(--priInk); min-height: 44px; display: flex; align-items: center; padding: 0 4px; }
+.fb-close {
+  margin-top: 8px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: var(--ink2);
+}
+.page.elder .fb-t { font-size: 20px; }
+.page.elder .fb-note { font-size: 15px; }
+.page.elder .fb-k,
+.page.elder .fb-copy,
+.page.elder .fb-close { font-size: 16px; }
+.page.elder .fb-v { font-size: 17px; }

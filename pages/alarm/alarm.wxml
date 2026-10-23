@@ -28,5 +28,6 @@
     <view class="alarm-stop" hover-class="al-press" hover-stay-time="80" bindtap="onStop">停止</view>
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

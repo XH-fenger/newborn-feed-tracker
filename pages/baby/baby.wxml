@@ -1,4 +1,4 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page baby-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
@@ -12,20 +12,37 @@
 
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
-    <view class="card anim" style="margin-top:14px">
+    <view class="sec">宝宝</view>
+    <view class="card anim">
       <view class="fld">
         <view class="flabel">昵称</view>
-        <input class="tx" value="{{name}}" placeholder="如：豆豆" placeholder-class="ph" bindinput="onName" />
+        <input class="tx {{nameErr ? 'bad' : ''}}" maxlength="12" value="{{name}}" placeholder="如：豆豆" placeholder-class="ph" bindinput="onName" />
+        <view class="ferr" wx:if="{{nameErr}}">{{nameErr}}</view>
       </view>
       <view class="fld">
-        <view class="flabel">性别</view>
-        <view class="seg-inline seg-2i">
-          <view class="si {{gender === 'M' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="M" bindtap="onGender">男宝</view>
-          <view class="si {{gender === 'F' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="F" bindtap="onGender">女宝</view>
+        <view class="pair">
+          <view class="choice">
+            <view class="flabel">性别</view>
+            <view class="seg-inline seg-2i">
+              <view class="si {{gender === 'M' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="M" bindtap="onGender">男宝</view>
+              <view class="si {{gender === 'F' ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="F" bindtap="onGender">女宝</view>
+            </view>
+          </view>
+          <view class="choice">
+            <view class="flabel">是否早产</view>
+            <view class="seg-inline seg-2i">
+              <view class="si {{preterm ? '' : 'on'}}" hover-class="hv-si" hover-stay-time="60" data-v="0" bindtap="onPreterm">足月</view>
+              <view class="si {{preterm ? 'on' : ''}}" hover-class="hv-si" hover-stay-time="60" data-v="1" bindtap="onPreterm">早产</view>
+            </view>
+          </view>
         </view>
+        <view class="fhint" wx:if="{{preterm}}">成长曲线按实际月龄参照足月标准</view>
       </view>
       <view class="fld">
-        <view class="flabel">出生日期</view>
+        <view class="flabel-row">
+          <view class="flabel">出生日期</view>
+          <view class="flabel-a" wx:if="{{ageText}}">{{ageText}}</view>
+        </view>
         <picker mode="date" value="{{birthday}}" end="{{today}}" bindchange="onBirthday">
           <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
             <text class="ph-val">{{birthday}}</text>
@@ -33,22 +50,33 @@
           </view>
         </picker>
       </view>
-      <view class="fld">
-        <view class="flabel">出生体重 (kg)</view>
-        <input class="tx" type="digit" value="{{birthWeight}}" placeholder="如 3.4（选填）" placeholder-class="ph" bindinput="onWeight" />
-      </view>
-      <view class="fld">
-        <view class="flabel">出生身高 (cm)</view>
-        <input class="tx" type="digit" value="{{birthHeight}}" placeholder="如 50.0（选填，用于身高曲线）" placeholder-class="ph" bindinput="onHeight" />
-      </view>
-      <view class="fld">
-        <view class="flabel">出生头围 (cm)</view>
-        <input class="tx" type="digit" value="{{birthHead}}" placeholder="如 34.0（选填，用于头围曲线）" placeholder-class="ph" bindinput="onHead" />
+    </view>
+
+    <view class="sec">出生测量</view>
+    <view class="card anim">
+      <view class="meas-lead">选填。填写后，成长曲线会从出生这一点开始画。</view>
+      <view class="meas">
+        <view class="fld">
+          <view class="flabel">体重 kg</view>
+          <input class="tx {{weightErr ? 'bad' : ''}}" type="digit" value="{{birthWeight}}" placeholder="3.4" placeholder-class="ph" bindinput="onWeight" />
+          <view class="ferr" wx:if="{{weightErr}}">{{weightErr}}</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">身高 cm</view>
+          <input class="tx {{heightErr ? 'bad' : ''}}" type="digit" value="{{birthHeight}}" placeholder="50" placeholder-class="ph" bindinput="onHeight" />
+          <view class="ferr" wx:if="{{heightErr}}">{{heightErr}}</view>
+        </view>
+        <view class="fld">
+          <view class="flabel">头围 cm</view>
+          <input class="tx {{headErr ? 'bad' : ''}}" type="digit" value="{{birthHead}}" placeholder="34" placeholder-class="ph" bindinput="onHead" />
+          <view class="ferr" wx:if="{{headErr}}">{{headErr}}</view>
+        </view>
       </view>
     </view>
 
     <view class="btn-save anim" hover-class="hv-save" hover-stay-time="80" bindtap="onSave">保存</view>
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

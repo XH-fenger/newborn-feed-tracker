@@ -1,0 +1,80 @@
+<view class="page data-page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
+
+  <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
+    <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
+      <view class="nav-back" hover-class="hv-si" hover-stay-time="60" bindtap="onBack">
+        <image class="nav-back-ic" src="{{icBack}}" mode="aspectFit" />
+        <text>返回</text>
+      </view>
+      <view class="nav-mid nav-mid-title">数据</view>
+    </view>
+  </view>
+
+  <view class="page-body" style="padding-top:{{sbH + navH + 16}}px">
+    <view class="sec anim">导出与分享</view>
+    <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExport">
+        <view class="ric" style="background:var(--growthS)">
+          <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导出数据</view>
+          <view class="rd">生成 JSON 备份，可发给微信好友</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doExportCsv">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.down}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导出 CSV</view>
+          <view class="rd">表格形式，方便给医生 / 家人看</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doShare">
+        <view class="ric" style="background:var(--growthS)">
+          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">分享摘要 / 长图</view>
+          <view class="rd">{{sharing ? '正在生成…' : '今日卡片、7 天周报、30 天月报'}}</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+    </view>
+
+    <view class="sec anim">导入</view>
+    <view class="card anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doImport">
+        <view class="ric" style="background:var(--priSoft)">
+          <image class="ric-ic" src="{{ic.up}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt">导入数据</view>
+          <view class="rd">从聊天文件恢复记录</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+    </view>
+
+    <view class="card card-danger anim">
+      <view class="row" hover-class="hv-row" hover-stay-time="60" bindtap="doClear">
+        <view class="ric ric-danger">
+          <image class="ric-ic" src="{{ic.trash}}" mode="aspectFit" />
+        </view>
+        <view class="rbody">
+          <view class="rt danger">清空数据</view>
+          <view class="rd">不可恢复，建议先导出备份</view>
+        </view>
+        <text class="chev">›</text>
+      </view>
+    </view>
+
+    <view class="foot anim">数据全部保存在本机，不上传云端</view>
+  </view>
+
+  <noise-dock id="noiseDock" />
+  <toast id="toast" />
+</view>

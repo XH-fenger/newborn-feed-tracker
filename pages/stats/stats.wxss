@@ -1,4 +1,30 @@
-/* 统计页专属样式：区间切换 / 成长指标 Tab / 百分位提示 */
+/* 类型分段固定；区间和图表在下方独立滚动，避免画布盖住分段 */
+
+.stats-page {
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.page.elder.stats-page { padding-bottom: 0; }
+
+.stats-pin {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 16;
+  padding-bottom: 6px;
+  background: rgb(var(--bgRgb));
+}
+.stats-scroll {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+.stats-scroll .share-bar { margin-bottom: 18px; }
+.stats-scroll .chart-box { height: 170px; overflow: hidden; }
+.stats-scroll .chart { height: 158px; max-height: 158px; }
+.chartcard .drow { min-height: 44px; box-sizing: border-box; }
 
 .rng { margin: 12px 16px 0; }
 .rng-pick { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
@@ -25,3 +51,38 @@
   box-shadow: var(--sh1);
 }
 .share-btn.off { opacity: .55; pointer-events: none; }
+
+/* 环比（较上一周期） */
+.cmpbar {
+  margin: 12px 16px; padding: 12px 14px;
+  background: var(--card); border-radius: var(--r-md);
+  box-shadow: var(--sh1);
+}
+.cmpbar.shut { padding-top: 0; padding-bottom: 0; }
+.cmp-h {
+  min-height: 44px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--ink2);
+}
+.cmp-chev {
+  flex: none; font-size: 20px; font-weight: 400; line-height: 1; color: #C6CFCD;
+  transform: rotate(90deg);
+}
+.dark .cmp-chev { color: #5A636B; }
+.cmp-chev.open { transform: rotate(-90deg); }
+.page.elder .cmp-h { font-size: 16px; }
+.cmp-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.cmp-i {
+  width: calc(50% - 4px); box-sizing: border-box;
+  min-height: 44px; padding: 8px 10px;
+  border-radius: var(--r-md); background: var(--fill);
+}
+.cmp-i.on { background: var(--priSoft); }
+.cmp-k { font-size: 12px; font-weight: 600; color: var(--ink3); }
+.cmp-v { margin-top: 2px; font-size: 16px; font-weight: 800; color: var(--ink2); }
+.cmp-v.up { color: var(--priInk); }
+.cmp-v.down { color: var(--temp); }
+.cmp-s { margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--ink2); line-height: 1.35; }
+.page.elder .cmp-k { font-size: 14px; }
+.page.elder .cmp-v { font-size: 18px; }
+.page.elder .cmp-s { font-size: 14px; }

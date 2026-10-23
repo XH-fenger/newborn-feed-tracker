@@ -1,15 +1,15 @@
-<view class="page t-{{theme}} {{dark ? 'dark' : ''}}">
+<view class="page t-{{theme}} {{dark ? 'dark' : ''}} {{elder ? 'elder' : ''}}">
 
   <view class="nav {{navSc ? 'sc' : ''}}" style="padding-top:{{sbH}}px">
     <view class="nav-row nav-row-pad" style="min-height:{{navH}}px">
-      <view class="nav-mid">{{navMeta}}</view>
+      <view class="nav-mid nav-mid-left">{{navMeta}}</view>
     </view>
   </view>
 
   <view class="page-body" style="padding-top:{{sbH + navH + 10}}px">
 
     <!-- 类型分段 -->
-    <view class="seg seg-6 anim">
+    <view class="seg seg-7 anim">
       <view class="seg-thumb" style="transform:translateX({{segIndex * 100}}%)"></view>
       <view
         wx:for="{{segs}}" wx:key="k"
@@ -18,6 +18,22 @@
         data-k="{{item.k}}" data-i="{{index}}"
         bindtap="onSegTap"
       >{{item.t}}</view>
+    </view>
+
+    <!-- 同上一次（一键重复） -->
+    <view
+      class="rep anim"
+      wx:if="{{repeatLabel && !editing && seg !== 'growth'}}"
+      hover-class="hv-sec" hover-stay-time="80"
+      bindtap="onRepeat"
+      aria-role="button" aria-label="按上一次的内容再记一条"
+    >
+      <view class="rep-ic">↻</view>
+      <view class="rep-body">
+        <view class="rep-k">同上一次</view>
+        <view class="rep-v">{{repeatLabel}}</view>
+      </view>
+      <view class="rep-go">再记一条 ›</view>
     </view>
 
     <!-- ============ 喂养 ============ -->
@@ -315,10 +331,50 @@
       </view>
     </block>
 
+    <!-- ============ 洗澡 ============ -->
+    <block wx:if="{{seg === 'bath'}}">
+      <view class="card anim" style="margin-top:14px">
+        <view class="fld">
+          <view class="flabel">时长 (分钟)</view>
+          <view class="fhint">新生儿洗澡大约 5–10 分钟，填 0 表示只记这一次</view>
+          <view class="stepper">
+            <view class="st {{bathMin <= 0 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="dec" bindtap="stepBath" aria-role="button" aria-label="减少时长">−</view>
+            <view class="num">
+              <input class="num-in" type="digit" value="{{bathMin}}" bindinput="onBathInput" bindblur="onBathBlur" />
+              <text class="unit">分</text>
+            </view>
+            <view class="st {{bathMin >= 90 ? 'off' : ''}}" hover-class="hv-st" hover-stay-time="60" data-op="inc" bindtap="stepBath" aria-role="button" aria-label="增加时长">+</view>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">记录时间</view>
+          <view class="pickers">
+            <picker class="pk" mode="date" value="{{dateStr}}" bindchange="onDateChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{dateStr}}</text>
+                <image class="ph-ic" src="{{icCal}}" mode="aspectFit" />
+              </view>
+            </picker>
+            <picker class="pk" mode="time" value="{{timeStr}}" bindchange="onTimeChange">
+              <view class="picker-shell" hover-class="hv-si" hover-stay-time="60">
+                <text class="ph-val">{{timeStr}}</text>
+                <image class="ph-ic" src="{{icClock}}" mode="aspectFit" />
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="fld">
+          <view class="flabel">备注</view>
+          <input class="tx" value="{{note}}" placeholder="可选，如：水温适宜" placeholder-class="ph" bindinput="onNote" />
+        </view>
+      </view>
+    </block>
+
     <!-- 保存 / 删除 -->
     <view class="btn-save anim" hover-class="hv-save" hover-stay-time="80" bindtap="onSave">保存记录</view>
     <view wx:if="{{editing}}" class="btn-del anim" hover-class="hv-save" hover-stay-time="80" bindtap="onDelete">删除这条记录</view>
   </view>
 
+  <noise-dock id="noiseDock" />
   <toast id="toast" />
 </view>

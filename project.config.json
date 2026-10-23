@@ -34,7 +34,10 @@
   "condition": {},
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "docs" },
+      { "type": "folder", "value": "assets/icon" }
+    ],
     "include": []
   },
   "editorSetting": {}

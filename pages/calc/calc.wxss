@@ -1,0 +1,61 @@
+.calc-page { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+.ph { color: var(--ink3); font-weight: 400; }
+
+.calc-page .flabel-row .flabel { margin-bottom: 0; }
+.calc-page .flabel-row { margin-bottom: 9px; }
+.calc-page .fhint { margin: 8px 0 0; }
+.calc-page .fld .stepper { margin-top: 0; }
+
+.calc-out { padding: 18px 16px 14px; }
+.calc-k { font-size: 13px; font-weight: 700; color: var(--ink3); }
+.calc-v {
+  margin-top: 4px;
+  font-size: 40px; font-weight: 800; letter-spacing: -1.2px; line-height: 1.05;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.calc-u { margin-left: 4px; font-size: 16px; font-weight: 700; letter-spacing: 0; color: var(--ink2); }
+.calc-range { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--priInk); }
+
+.calc-split {
+  display: flex; gap: 10px; margin-top: 16px;
+}
+.calc-col {
+  flex: 1; min-width: 0;
+  padding: 12px 12px 10px;
+  border-radius: var(--r-md);
+  background: var(--fill);
+}
+.calc-sk { font-size: 12px; font-weight: 700; color: var(--ink3); }
+.calc-sv {
+  margin-top: 4px;
+  font-size: 18px; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums; letter-spacing: -.3px;
+}
+.calc-sr { margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--ink2); line-height: 1.35; }
+.calc-src { margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--priInk); }
+.calc-basis {
+  margin-top: 6px;
+  font-size: 12.5px; font-weight: 500; color: var(--ink2); line-height: 1.45;
+}
+.calc-v-sm { font-size: 32px; }
+.calc-fort { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.calc-caution {
+  margin-bottom: 10px; padding: 10px 12px; border-radius: var(--r-md);
+  background: rgba(217, 58, 63, .1);
+  font-size: 13px; font-weight: 700; color: var(--danger); line-height: 1.4;
+}
+
+.calc-empty { padding: 18px 16px 16px; }
+.calc-empty-t { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; }
+.calc-empty-s { margin-top: 6px; font-size: 13px; font-weight: 500; color: var(--ink2); line-height: 1.45; }
+.calc-link {
+  display: inline-flex; align-items: center; margin-top: 12px;
+  min-height: 44px; padding: 0 2px;
+  font-size: 15px; font-weight: 700; color: var(--priInk);
+}
+.hv-ghost { opacity: .6; }
+
+.calc-note {
+  margin: 2px 20px 0;
+  font-size: 12px; font-weight: 500; color: var(--ink3); line-height: 1.5;
+}

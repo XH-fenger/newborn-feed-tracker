@@ -1,4 +1,110 @@
-/* 首页专属样式：接种倒计时 / 体温偏高提示横幅 */
+/* 首页布局 v1：紧凑四宫格。v2 参考 Baby Buddy 仪表盘 */
+
+.home-v1 .hero { padding-bottom: 46px; }
+.home-v1 .hero-baby { gap: 12px; margin-top: 4px; }
+.home-v1 .hero-ava { width: 48px; height: 48px; }
+.home-v1 .hero-nm { font-size: 22px; }
+.home-v1 .today { margin-top: -34px; padding: 6px; gap: 6px; }
+.home-v1 .tcell { padding: 10px 12px; }
+.home-v1 .tci { width: 26px; height: 26px; margin-bottom: 6px; }
+.home-v1 .tci-ic { width: 15px; height: 15px; }
+.home-v1 .tcv { font-size: 20px; }
+.home-v1 .tcl { margin-top: 3px; }
+.home-v1 .calc-entry { margin: 10px 16px 0; }
+.home-v1 .calc-entry .row,
+.home-v1 .card .row { padding: 9px 14px; gap: 10px; }
+.home-v1 .ric { width: 34px; height: 34px; border-radius: 10px; }
+.home-v1 .ric-ic { width: 17px; height: 17px; }
+.home-v1 .row + .row::before { left: 58px; }
+.home-v1 .tempday { margin-top: 10px; padding: 12px 10px 10px; }
+.home-v1 .tempday-h { padding-bottom: 8px; }
+.home-v1 .tslot { padding: 9px 12px; }
+.home-v1 .tslot-v { font-size: 20px; margin-top: 2px; }
+.home-v1 .tslot-s { margin-top: 2px; }
+.home-v1 .next { margin-top: 10px; padding: 14px 16px; }
+.home-v1 .next-big { font-size: 26px; }
+
+.home-v2 .hero { padding-bottom: 18px; }
+.home-v2 .hero-baby { gap: 12px; margin-top: 2px; }
+.home-v2 .hero-ava { width: 48px; height: 48px; }
+.home-v2 .hero-nm { font-size: 22px; }
+.home-v2 .next { margin: 12px 16px 0; padding: 14px 16px; }
+.home-v2 .next-big { font-size: 26px; }
+.home-v2 .tempday { margin-top: 10px; padding: 12px 10px 10px; }
+.home-v2 .tempday-h { padding-bottom: 8px; }
+.home-v2 .tslot { padding: 9px 12px; }
+.home-v2 .tslot-v { font-size: 20px; margin-top: 2px; }
+.home-v2 .tslot-s { margin-top: 2px; }
+
+.statline {
+  margin: 10px 16px 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh1);
+  overflow: hidden;
+}
+.stat {
+  min-height: 64px;
+  padding: 10px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.stat + .stat { box-shadow: inset 1px 0 0 var(--line); }
+.stat b {
+  font-size: 18px; font-weight: 800; color: var(--ink);
+  letter-spacing: -.4px; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat text { font-size: 12px; font-weight: 600; color: var(--ink3); }
+.stat-sleep { text-align: center; }
+.toolgrid {
+  margin: 10px 16px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tool {
+  min-height: 52px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh1);
+}
+.tool-ic {
+  width: 32px; height: 32px; border-radius: 10px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.tool-ic-img { width: 17px; height: 17px; }
+.tool-t { font-size: 14px; font-weight: 700; color: var(--ink); }
+.page.elder .card .row { padding-top: 14px; padding-bottom: 14px; }
+.page.elder .stat { min-height: 72px; }
+.page.elder .stat b { font-size: 20px; }
+.page.elder .stat text,
+.page.elder .tool-t { font-size: 15px; }
+.page.elder .tool { min-height: 60px; }
+
+.next-ring { position: relative; width: 72px; height: 72px; flex: none; }
+.next-ring-cv { width: 72px; height: 72px; }
+.next-ring .rt b { font-size: 15px; }
+.next-ring .rt span { font-size: 11px; letter-spacing: 0; white-space: nowrap; }
+.page .sec { margin: 14px 20px 6px; }
+.page .sec.sec-tap { margin-top: 8px; }
+.page .vac-banner,
+.page .fever-banner { margin-top: 10px; padding: 10px 12px; gap: 10px; }
+.page .card .row { padding: 9px 14px; gap: 10px; }
+.page .ric { width: 34px; height: 34px; border-radius: 10px; }
+.page .ric-ic { width: 17px; height: 17px; }
+.page .row + .row::before { left: 58px; }
+
+.calc-entry { margin: 10px 16px 0; }
 
 /* 距下次接种横幅 */
 .vac-banner {
@@ -24,3 +130,18 @@
 .fever-b { flex: 1; min-width: 0; }
 .fever-t { font-size: 13px; font-weight: 700; color: var(--danger); }
 .fever-s { font-size: 12px; color: var(--ink2); margin-top: 2px; }
+
+/* 同上次再记一次 */
+.repline {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 16px 0; padding: 10px 14px;
+  background: var(--card); border-radius: var(--r-md);
+  box-shadow: var(--sh1);
+}
+.repline-ic { flex: none; color: var(--pri); font-size: 15px; font-weight: 700; }
+.repline-t { flex: none; font-size: 13.5px; font-weight: 700; color: var(--priInk); }
+.repline-v {
+  flex: 1; min-width: 0; text-align: right;
+  font-size: 12.5px; font-weight: 500; color: var(--ink3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}

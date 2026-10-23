@@ -78,6 +78,11 @@ function rowOf(r) {
     o.detail = (r.dose ? r.dose : '已服用') + (r.note ? ' · ' + r.note : '');
     o.iconKey = 'med19';
     o.icBg = 'priSoft';
+  } else if (r.type === 'bath') {
+    o.title = '洗澡';
+    o.detail = (r.duration > 0 ? '时长 ' + r.duration + ' 分钟' : '已记录') + (r.note ? ' · ' + r.note : '');
+    o.iconKey = 'bath19';
+    o.icBg = 'bathS';
   } else if (r.type === 'temp') {
     var slotName = tempSlot(r) === 'pm' ? '晚测' : '早测';
     var flag = tempFlag(r.celsius);

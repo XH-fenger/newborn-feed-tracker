@@ -182,9 +182,59 @@ function growthSeriesMetric(records, metric, birthValue) {
   return out;
 }
 
+// —— 区间合计（环比用）——
+function sumDays(days) {
+  var o = { ml: 0, feed: 0, diaper: 0, sleepMin: 0, days: days.length };
+  days.forEach(function (d) {
+    o.ml += d.feedMl;
+    o.feed += d.feedCount;
+    o.diaper += d.diaper;
+    o.sleepMin += d.sleepMin;
+  });
+  return o;
+}
+
+// —— 环比：当前区间 vs 紧邻的等长上一区间 ——
+// 返回 { has, n, cur, prev, pct, avgCur, avgPrev }
+// pct 为百分比整数；上一周期为 0 而当前 > 0 时返回 null（表示「新增」）
+function comparePeriods(records, startTs, endTs) {
+  var curDays = dailyAggBetween(records, startTs, endTs);
+  var n = curDays.length;
+  if (!n) { return { has: false, n: 0 }; }
+  var prevEnd = dayStart(startTs) - 86400000;
+  var prevStart = prevEnd - (n - 1) * 86400000;
+  var prevDays = dailyAggBetween(records, prevStart, prevEnd);
+  var cur = sumDays(curDays);
+  var prev = sumDays(prevDays);
+  function pct(a, b) {
+    if (!b) { return a > 0 ? null : 0; }
+    return Math.round((a - b) / b * 100);
+  }
+  function avg(o, key, div, digits) {
+    var v = o[key] / (o.days || 1) / (div || 1);
+    var p = Math.pow(10, digits == null ? 1 : digits);
+    return Math.round(v * p) / p;
+  }
+  return {
+    has: true,
+    n: n,
+    cur: cur,
+    prev: prev,
+    pct: {
+      ml: pct(cur.ml, prev.ml),
+      feed: pct(cur.feed, prev.feed),
+      diaper: pct(cur.diaper, prev.diaper),
+      sleep: pct(cur.sleepMin, prev.sleepMin)
+    },
+    avgCur: { ml: avg(cur, 'ml'), feed: avg(cur, 'feed'), diaper: avg(cur, 'diaper'), sleepH: avg(cur, 'sleepMin', 60) },
+    avgPrev: { ml: avg(prev, 'ml'), feed: avg(prev, 'feed'), diaper: avg(prev, 'diaper'), sleepH: avg(prev, 'sleepMin', 60) }
+  };
+}
+
 module.exports = {
   todayStats: todayStats, todayTemp: todayTemp, todayTempView: todayTempView, tempDays: tempDays,
   lastFeed: lastFeed, lastN: lastN,
   dailyAgg: dailyAgg, dailyAggBetween: dailyAggBetween, avg: avg,
+  comparePeriods: comparePeriods,
   growthSeries: growthSeries, growthSeriesMetric: growthSeriesMetric, mineStats: mineStats
 };
